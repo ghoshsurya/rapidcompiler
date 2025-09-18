@@ -2,7 +2,6 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
@@ -134,13 +133,15 @@ function executeCode(command, args, input) {
 }
 
 async function executeOnlineCompiler(language, code, input) {
+  const https = require('https');
+  
   const languageMap = {
     'c': 'c',
     'cpp': 'cpp',
     'php': 'php'
   };
 
-  const payload = {
+  const payload = JSON.stringify({
     language: languageMap[language],
     version: 'latest',
     files: [{
@@ -148,34 +149,53 @@ async function executeOnlineCompiler(language, code, input) {
       content: code
     }],
     stdin: input || ''
-  };
+  });
 
-  try {
-    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'emkc.org',
+      port: 443,
+      path: '/api/v2/piston/execute',
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          
+          if (result.run) {
+            resolve({
+              output: result.run.stdout || '',
+              error: result.run.stderr || null
+            });
+          } else {
+            resolve({
+              output: '',
+              error: result.compile?.stderr || 'Compilation failed'
+            });
+          }
+        } catch (e) {
+          resolve({ output: '', error: 'Failed to parse response' });
+        }
+      });
     });
 
-    const result = await response.json();
-    
-    if (result.run) {
-      return {
-        output: result.run.stdout || '',
-        error: result.run.stderr || null
-      };
-    } else {
-      return {
-        output: '',
-        error: result.compile?.stderr || 'Compilation failed'
-      };
-    }
-  } catch (error) {
-    return {
-      output: '',
-      error: `Execution error: ${error.message}`
-    };
-  }
+    req.on('error', (e) => {
+      resolve({ output: '', error: `Network error: ${e.message}` });
+    });
+
+    req.write(payload);
+    req.end();
+  });
 }
