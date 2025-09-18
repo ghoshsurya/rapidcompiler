@@ -1,0 +1,13 @@
+{
+  "name": "codesplex",
+  "version": "1.0.0",
+  "description": "Online Code Editor & Compiler Platform",
+  "scripts": {
+    "dev": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "deploy": "netlify deploy --prod"
+  },
+  "keywords": ["code-editor", "compiler", "online-ide"],
+  "author": "Codesplex",
+  "license": "MIT"
+}
