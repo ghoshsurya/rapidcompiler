@@ -38,28 +38,40 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchUserProfile = async (userId) => {
+    console.log('Fetching user profile for:', userId);
     const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .single();
     
+    console.log('Profile data:', data, 'Error:', error);
+    
     if (!error && data) {
       setUser(data);
+    } else if (error) {
+      console.error('Profile fetch error:', error);
     }
   };
 
   const login = async (email, password) => {
     try {
+      console.log('Attempting login for:', email);
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
       
+      console.log('Login successful:', data.user?.id);
       return { success: true };
     } catch (error) {
+      console.error('Login failed:', error);
       return { 
         success: false, 
         error: error.message || 'Login failed' 
@@ -69,13 +81,20 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, email, password) => {
     try {
+      console.log('Registering user:', { username, email });
+      
       // First create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password
       });
       
-      if (authError) throw authError;
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw authError;
+      }
+      
+      console.log('Auth user created:', authData.user?.id);
       
       // Then create user profile
       if (authData.user) {
@@ -85,14 +104,21 @@ export const AuthProvider = ({ children }) => {
             id: authData.user.id,
             username,
             email,
-            password_hash: 'handled_by_supabase_auth'
+            password_hash: 'handled_by_supabase_auth',
+            is_admin: false
           });
         
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          throw profileError;
+        }
+        
+        console.log('User profile created successfully');
       }
       
       return { success: true };
     } catch (error) {
+      console.error('Registration error:', error);
       return { 
         success: false, 
         error: error.message || 'Registration failed' 
