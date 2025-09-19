@@ -47,18 +47,32 @@ const ResetPassword = () => {
     }
 
     console.log('Calling updatePasswordWithToken...');
-    const result = await updatePasswordWithToken(password);
-    console.log('Result:', result);
     
-    if (result.success) {
-      console.log('Password updated successfully');
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/admin/login');
-      }, 2000);
-    } else {
-      console.error('Password update failed:', result.error);
-      setError(result.error);
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Password update timed out')), 10000)
+    );
+    
+    try {
+      const result = await Promise.race([
+        updatePasswordWithToken(password),
+        timeoutPromise
+      ]);
+      console.log('Result:', result);
+    
+      if (result.success) {
+        console.log('Password updated successfully');
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/admin/login');
+        }, 2000);
+      } else {
+        console.error('Password update failed:', result.error);
+        setError(result.error);
+      }
+    } catch (timeoutError) {
+      console.error('Timeout or other error:', timeoutError);
+      setError(timeoutError.message);
     }
 
     setLoading(false);

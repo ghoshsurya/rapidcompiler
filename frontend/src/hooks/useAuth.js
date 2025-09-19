@@ -214,28 +214,46 @@ export const AuthProvider = ({ children }) => {
 
   const updatePasswordWithToken = async (newPassword) => {
     try {
+      console.log('Starting password update process...');
+      
       // First, set the session from URL params
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
       
+      console.log('Tokens found:', { accessToken: !!accessToken, refreshToken: !!refreshToken });
+      
       if (accessToken) {
+        console.log('Setting session...');
         const { error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
         });
         
-        if (sessionError) throw sessionError;
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+        console.log('Session set successfully');
+      } else {
+        throw new Error('No access token found in URL');
       }
       
       // Now update the password
+      console.log('Updating password...');
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Password update error:', error);
+        throw error;
+      }
+      
+      console.log('Password updated successfully');
       return { success: true };
     } catch (error) {
+      console.error('Full error:', error);
       return { success: false, error: error.message };
     }
   };
