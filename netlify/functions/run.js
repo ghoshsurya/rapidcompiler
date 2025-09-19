@@ -27,18 +27,14 @@ exports.handler = async (event, context) => {
 
   // PHP language handling
   if (language === 'php') {
-    try {
-      const result = await executeOnlineCompiler('php', code, input);
-      return {
-        statusCode: 200,
-        body: JSON.stringify(result)
-      };
-    } catch (error) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ output: '', error: error.message })
-      };
-    }
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ 
+        output: 'PHP preview ready', 
+        error: null,
+        webPreview: true
+      })
+    };
   }
 
   // Python execution
@@ -73,20 +69,15 @@ exports.handler = async (event, context) => {
     }
   }
 
-  // C/C++ execution using online compiler
+  // C/C++ - Show message to use online compiler
   if (language === 'c' || language === 'cpp') {
-    try {
-      const result = await executeOnlineCompiler(language, code, input);
-      return {
-        statusCode: 200,
-        body: JSON.stringify(result)
-      };
-    } catch (error) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ output: '', error: error.message })
-      };
-    }
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ 
+        output: '', 
+        error: 'C/C++ compilation requires local setup. Use online compilers like replit.com or onlinegdb.com for now.' 
+      })
+    };
   }
 
   return {
@@ -132,70 +123,3 @@ function executeCode(command, args, input) {
   });
 }
 
-async function executeOnlineCompiler(language, code, input) {
-  const https = require('https');
-  
-  const languageMap = {
-    'c': 'c',
-    'cpp': 'cpp',
-    'php': 'php'
-  };
-
-  const payload = JSON.stringify({
-    language: languageMap[language],
-    version: 'latest',
-    files: [{
-      name: language === 'cpp' ? 'main.cpp' : language === 'c' ? 'main.c' : 'main.php',
-      content: code
-    }],
-    stdin: input || ''
-  });
-
-  return new Promise((resolve, reject) => {
-    const options = {
-      hostname: 'emkc.org',
-      port: 443,
-      path: '/api/v2/piston/execute',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-      
-      res.on('end', () => {
-        try {
-          const result = JSON.parse(data);
-          
-          if (result.run) {
-            resolve({
-              output: result.run.stdout || '',
-              error: result.run.stderr || null
-            });
-          } else {
-            resolve({
-              output: '',
-              error: result.compile?.stderr || 'Compilation failed'
-            });
-          }
-        } catch (e) {
-          resolve({ output: '', error: 'Failed to parse response' });
-        }
-      });
-    });
-
-    req.on('error', (e) => {
-      resolve({ output: '', error: `Network error: ${e.message}` });
-    });
-
-    req.write(payload);
-    req.end();
-  });
-}
