@@ -68,6 +68,12 @@ LANGUAGE_CONFIG = {
         'compile_cmd': ['javac', '/tmp/Main.java'],
         'run_cmd': ['java', '-cp', '/tmp', 'Main'],
         'extension': '.java'
+    },
+    'typescript': {
+        'image': 'node:16-alpine',
+        'compile_cmd': ['sh', '-c', 'cd /tmp && npm install -g typescript && tsc code.ts'],
+        'run_cmd': ['node', '/tmp/code.js'],
+        'extension': '.ts'
     }
 }
 
@@ -135,6 +141,33 @@ def execute_code(language, code, input_data=""):
                 )
                 
                 # Run
+                result = client.containers.run(
+                    config['image'],
+                    config['run_cmd'],
+                    volumes={temp_dir: {'bind': '/tmp', 'mode': 'rw'}},
+                    mem_limit='128m',
+                    network_disabled=True,
+                    remove=True,
+                    timeout=10,
+                    input=input_data.encode() if input_data else None
+                )
+            
+            elif language == 'typescript':
+                code_file = os.path.join(temp_dir, "code.ts")
+                with open(code_file, 'w') as f:
+                    f.write(code)
+                
+                # Compile TypeScript to JavaScript
+                client.containers.run(
+                    config['image'],
+                    config['compile_cmd'],
+                    volumes={temp_dir: {'bind': '/tmp', 'mode': 'rw'}},
+                    mem_limit='128m',
+                    remove=True,
+                    timeout=15
+                )
+                
+                # Run compiled JavaScript
                 result = client.containers.run(
                     config['image'],
                     config['run_cmd'],
