@@ -86,9 +86,6 @@ const CodeEditor = ({ darkMode }) => {
       } else if (language === 'web') {
         setOutput('Web page rendered successfully!');
         setWebPreview(`data:text/html;charset=utf-8,${encodeURIComponent(code)}`);
-      } else if (language === 'php') {
-        setOutput('PHP code ready!');
-        setWebPreview(`data:text/html;charset=utf-8,${encodeURIComponent(`<!DOCTYPE html><html><head><title>PHP Runner</title></head><body style="font-family: Arial; padding: 20px;"><h2>PHP Code:</h2><pre style="background: #f4f4f4; padding: 10px; border-radius: 5px;">${code}</pre><p><strong>Note:</strong> PHP requires server execution.</p><a href="https://onecompiler.com/php" target="_blank" style="background: #007cba; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Run PHP Online</a></body></html>`)}`);
       } else {
         setOutput(response.data.output || 'Program executed successfully (no output)');
         setWebPreview('');
@@ -438,10 +435,10 @@ const CodeEditor = ({ darkMode }) => {
             <div className={`border-b border-t lg:border-t-0 ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
               <div className="flex items-center space-x-2">
                 <Terminal className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm font-medium">{(language === 'web' || language === 'php') ? 'Preview' : 'Output'}</span>
+                <span className="text-xs sm:text-sm font-medium">{language === 'web' ? 'Web Preview' : 'Output'}</span>
               </div>
             </div>
-            {(language === 'web' || language === 'php') && webPreview ? (
+            {language === 'web' && webPreview ? (
               <iframe
                 src={webPreview}
                 className="flex-1 border-0 min-h-48"
