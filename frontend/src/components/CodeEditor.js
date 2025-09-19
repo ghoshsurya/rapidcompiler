@@ -390,9 +390,8 @@ const CodeEditor = ({ darkMode }) => {
         }
         
         // String interpolation: print("Hello \(name)")
-        const interpolationMatch = trimmed.match(/print\("([^"]*\\\([^)]+\)[^"]*)")/);
-        if (interpolationMatch) {
-          let text = interpolationMatch[1];
+        if (trimmed.includes('\\(') && trimmed.includes('print(')) {
+          let text = trimmed.match(/print\("([^"]+)"/)?.[1] || '';
           text = text.replace(/\\\((\w+)\)/g, (match, varName) => {
             return variables[varName] || varName;
           });
@@ -453,9 +452,8 @@ const CodeEditor = ({ darkMode }) => {
         }
         
         // String interpolation: puts "Hello #{name}"
-        const interpolationMatch = trimmed.match(/puts\s+"([^"]*#\{[^}]+\}[^"]*)")/);
-        if (interpolationMatch) {
-          let text = interpolationMatch[1];
+        if (trimmed.includes('#{') && trimmed.includes('puts')) {
+          let text = trimmed.match(/puts\s+"([^"]+)"/)?.[1] || '';
           text = text.replace(/#\{(\w+)\}/g, (match, varName) => {
             return variables[varName] || varName;
           });
