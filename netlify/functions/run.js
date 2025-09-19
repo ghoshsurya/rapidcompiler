@@ -134,13 +134,19 @@ async function executeWithJudge0(language, code, input) {
   
   const languageMap = {
     'c': 'c',
-    'cpp': 'cpp',
+    'cpp': 'c++',
     'php': 'php'
+  };
+
+  const versionMap = {
+    'c': '10.2.0',
+    'cpp': '10.2.0', 
+    'php': '8.2.3'
   };
 
   const payload = {
     language: languageMap[language],
-    version: 'latest',
+    version: versionMap[language],
     files: [{
       name: language === 'cpp' ? 'main.cpp' : language === 'c' ? 'main.c' : 'main.php',
       content: code
