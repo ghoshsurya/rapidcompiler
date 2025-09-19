@@ -121,11 +121,70 @@ const CodeEditor = ({ darkMode }) => {
     setWebPreview('');
   };
 
+  const executeTypeScript = async () => {
+    try {
+      // Load TypeScript compiler from CDN
+      if (!window.ts) {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/typescript@latest/lib/typescript.js';
+        document.head.appendChild(script);
+        
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+      }
+      
+      // Compile TypeScript to JavaScript
+      const result = window.ts.transpile(code, {
+        target: window.ts.ScriptTarget.ES2015,
+        module: window.ts.ModuleKind.CommonJS
+      });
+      
+      // Create a safe execution environment
+      const originalConsoleLog = console.log;
+      let output = '';
+      
+      console.log = (...args) => {
+        output += args.join(' ') + '\n';
+      };
+      
+      // Execute the compiled JavaScript
+      try {
+        eval(result);
+        console.log = originalConsoleLog;
+        return output || 'Program executed successfully (no output)';
+      } catch (error) {
+        console.log = originalConsoleLog;
+        return `Runtime Error: ${error.message}`;
+      }
+    } catch (error) {
+      return `Compilation Error: ${error.message}`;
+    }
+  };
+
   const runCode = async () => {
     setIsRunning(true);
     setOutput('Running...');
     
     try {
+      // Handle TypeScript execution client-side
+      if (language === 'typescript') {
+        const result = await executeTypeScript();
+        setOutput(result);
+        setWebPreview('');
+        setIsRunning(false);
+        return;
+      }
+      
+      // Handle web preview locally
+      if (language === 'web') {
+        setOutput('Web page rendered successfully!');
+        setWebPreview(`data:text/html;charset=utf-8,${encodeURIComponent(code)}`);
+        setIsRunning(false);
+        return;
+      }
+      
+      // Backend execution for other languages
       const response = await axios.post('/api/run', {
         language,
         code,
@@ -135,9 +194,6 @@ const CodeEditor = ({ darkMode }) => {
       if (response.data.error) {
         setOutput(`Error: ${response.data.error}`);
         setWebPreview('');
-      } else if (language === 'web') {
-        setOutput('Web page rendered successfully!');
-        setWebPreview(`data:text/html;charset=utf-8,${encodeURIComponent(code)}`);
       } else {
         setOutput(response.data.output || 'Program executed successfully (no output)');
         setWebPreview('');
