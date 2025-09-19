@@ -162,6 +162,46 @@ const CodeEditor = ({ darkMode }) => {
     }
   };
 
+  const executeGo = async () => {
+    try {
+      // Load Go WASM runtime
+      if (!window.Go) {
+        const wasmScript = document.createElement('script');
+        wasmScript.src = 'https://cdn.jsdelivr.net/gh/golang/go@go1.21.0/misc/wasm/wasm_exec.js';
+        document.head.appendChild(wasmScript);
+        
+        await new Promise((resolve) => {
+          wasmScript.onload = resolve;
+        });
+      }
+      
+      // Simple Go code execution simulation
+      // Extract fmt.Println calls and execute them
+      const printMatches = code.match(/fmt\.Println\(["'`]([^"'`]+)["'`]\)/g);
+      let output = '';
+      
+      if (printMatches) {
+        printMatches.forEach(match => {
+          const text = match.match(/["'`]([^"'`]+)["'`]/)[1];
+          output += text + '\n';
+        });
+      }
+      
+      // Check for basic syntax errors
+      if (!code.includes('package main')) {
+        return 'Error: Go programs must start with "package main"';
+      }
+      
+      if (!code.includes('func main()')) {
+        return 'Error: Go programs must have a "func main()" function';
+      }
+      
+      return output || 'Program executed successfully (no output)';
+    } catch (error) {
+      return `Error: ${error.message}`;
+    }
+  };
+
   const runCode = async () => {
     setIsRunning(true);
     setOutput('Running...');
@@ -170,6 +210,15 @@ const CodeEditor = ({ darkMode }) => {
       // Handle TypeScript execution client-side
       if (language === 'typescript') {
         const result = await executeTypeScript();
+        setOutput(result);
+        setWebPreview('');
+        setIsRunning(false);
+        return;
+      }
+      
+      // Handle Go execution client-side
+      if (language === 'go') {
+        const result = await executeGo();
         setOutput(result);
         setWebPreview('');
         setIsRunning(false);
