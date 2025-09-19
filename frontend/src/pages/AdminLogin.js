@@ -144,13 +144,12 @@ const AdminLogin = () => {
           </div>
 
           <div className="text-center space-y-2">
-            <button
-              type="button"
-              onClick={() => setShowForgotPassword(true)}
+            <Link
+              to="/simple-reset"
               className="font-medium text-red-600 hover:text-red-500 block w-full"
             >
               Forgot admin password?
-            </button>
+            </Link>
             <Link
               to="/login"
               className="font-medium text-red-600 hover:text-red-500"

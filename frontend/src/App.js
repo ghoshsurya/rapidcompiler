@@ -7,6 +7,7 @@ import Projects from './pages/Projects';
 import SharedProject from './pages/SharedProject';
 import AdminLogin from './pages/AdminLogin';
 import ResetPassword from './pages/ResetPassword';
+import SimplePasswordReset from './pages/SimplePasswordReset';
 import PasswordResetHandler from './components/PasswordResetHandler';
 import AdminDashboard from './components/AdminDashboard';
 import UserProfile from './components/UserProfile';
@@ -57,6 +58,7 @@ function App() {
             {/* Admin routes without navbar */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/simple-reset" element={<SimplePasswordReset />} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard darkMode={darkMode} /></AdminRoute>} />
             
             {/* Regular routes with navbar */}
