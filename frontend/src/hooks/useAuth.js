@@ -38,14 +38,33 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchUserProfile = async (userId) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (!error && data) {
-      setUser(data);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (!error && data) {
+        setUser(data);
+      } else {
+        console.log('Profile not found, user might need to complete registration');
+        // If profile doesn't exist, user is still authenticated but profile is missing
+        const { data: authUser } = await supabase.auth.getUser();
+        if (authUser.user) {
+          setUser({
+            id: authUser.user.id,
+            email: authUser.user.email,
+            username: authUser.user.email.split('@')[0],
+            full_name: '',
+            avatar_url: null,
+            is_admin: false,
+            created_at: authUser.user.created_at
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
   };
 
@@ -77,6 +96,25 @@ export const AuthProvider = ({ children }) => {
       });
       
       if (authError) throw authError;
+      
+      // Create user profile immediately after auth signup
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            username,
+            email,
+            full_name: fullName,
+            is_admin: false
+          });
+        
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          // Don't fail registration if profile creation fails
+        }
+      }
+      
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };

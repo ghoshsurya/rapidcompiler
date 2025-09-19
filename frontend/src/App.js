@@ -9,6 +9,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import UserProfile from './components/UserProfile';
 import Navbar from './components/Navbar';
+import AuthDebug from './components/AuthDebug';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import './index.css';
 
@@ -47,6 +48,7 @@ function App() {
                   <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
                   <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />
                 </Routes>
+                <AuthDebug />
               </>
             } />
           </Routes>
