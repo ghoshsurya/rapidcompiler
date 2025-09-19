@@ -214,6 +214,21 @@ export const AuthProvider = ({ children }) => {
 
   const updatePasswordWithToken = async (newPassword) => {
     try {
+      // First, set the session from URL params
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      
+      if (accessToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+        
+        if (sessionError) throw sessionError;
+      }
+      
+      // Now update the password
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });

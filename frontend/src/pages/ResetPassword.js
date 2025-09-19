@@ -32,6 +32,8 @@ const ResetPassword = () => {
     setLoading(true);
     setError('');
 
+    console.log('Starting password reset...');
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -44,14 +46,18 @@ const ResetPassword = () => {
       return;
     }
 
+    console.log('Calling updatePasswordWithToken...');
     const result = await updatePasswordWithToken(password);
+    console.log('Result:', result);
     
     if (result.success) {
+      console.log('Password updated successfully');
       setSuccess(true);
       setTimeout(() => {
         navigate('/admin/login');
       }, 2000);
     } else {
+      console.error('Password update failed:', result.error);
       setError(result.error);
     }
 
