@@ -22,40 +22,8 @@ exports.handler = async (event, context) => {
     };
   }
 
-  // C/C++ execution using Judge0 API
-  if (language === 'c' || language === 'cpp') {
-    try {
-      const result = await executeWithJudge0(language, code, input);
-      return {
-        statusCode: 200,
-        body: JSON.stringify(result)
-      };
-    } catch (error) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ output: '', error: error.message })
-      };
-    }
-  }
-
-  // PHP execution using Judge0 API
-  if (language === 'php') {
-    try {
-      const result = await executeWithJudge0(language, code, input);
-      return {
-        statusCode: 200,
-        body: JSON.stringify(result)
-      };
-    } catch (error) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ output: '', error: error.message })
-      };
-    }
-  }
-
-  // Python execution using Piston API
-  if (language === 'python') {
+  // Multi-language execution using Piston API
+  if (['c', 'cpp', 'php', 'python', 'java', 'csharp', 'sql'].includes(language)) {
     try {
       const result = await executeWithJudge0(language, code, input);
       return {
@@ -136,14 +104,20 @@ async function executeWithJudge0(language, code, input) {
     'c': 'c',
     'cpp': 'c++',
     'php': 'php',
-    'python': 'python'
+    'python': 'python',
+    'java': 'java',
+    'csharp': 'csharp',
+    'sql': 'sqlite3'
   };
 
   const versionMap = {
     'c': '10.2.0',
     'cpp': '10.2.0', 
     'php': '8.2.3',
-    'python': '3.10.0'
+    'python': '3.10.0',
+    'java': '15.0.2',
+    'csharp': '6.12.0',
+    'sql': '3.36.0'
   };
 
   const payload = {
@@ -152,7 +126,10 @@ async function executeWithJudge0(language, code, input) {
     files: [{
       name: language === 'cpp' ? 'main.cpp' : 
             language === 'c' ? 'main.c' : 
-            language === 'python' ? 'main.py' : 'main.php',
+            language === 'python' ? 'main.py' :
+            language === 'java' ? 'Main.java' :
+            language === 'csharp' ? 'main.cs' :
+            language === 'sql' ? 'main.sql' : 'main.php',
       content: code
     }],
     stdin: input || ''

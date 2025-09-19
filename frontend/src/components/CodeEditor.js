@@ -22,6 +22,33 @@ int main() {
     cout << "Hello, World!" << endl;
     return 0;
 }`,
+  java: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}`,
+  csharp: `using System;
+
+class Program {
+    static void Main() {
+        Console.WriteLine("Hello, World!");
+    }
+}`,
+  sql: `-- SQL Query Example
+SELECT 'Hello, World!' AS message;
+
+-- Create a sample table
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100)
+);
+
+-- Insert sample data
+INSERT INTO users VALUES (1, 'John Doe', 'john@example.com');
+
+-- Query the data
+SELECT * FROM users;`,
   php: `<?php
 echo "Hello, World!\n";
 ?>`,
@@ -163,6 +190,9 @@ const CodeEditor = ({ darkMode }) => {
               <option value="javascript">JavaScript</option>
               <option value="c">C</option>
               <option value="cpp">C++</option>
+              <option value="java">Java</option>
+              <option value="csharp">C#</option>
+              <option value="sql">SQL</option>
               <option value="php">PHP</option>
               <option value="web">HTML/CSS/JS</option>
             </select>
@@ -215,7 +245,9 @@ const CodeEditor = ({ darkMode }) => {
           <div className="flex-1">
             <Editor
               height="100%"
-              language={language === 'cpp' ? 'cpp' : language === 'web' ? 'html' : language}
+              language={language === 'cpp' ? 'cpp' : 
+                       language === 'web' ? 'html' : 
+                       language === 'csharp' ? 'csharp' : language}
               value={code}
               onChange={setCode}
               theme={darkMode ? 'vs-dark' : 'light'}
@@ -337,6 +369,42 @@ const CodeEditor = ({ darkMode }) => {
                       { label: 'button', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<button onclick="${1:function}()">${2:text}</button>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
                       { label: 'script', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<script>\n${1:// JavaScript code}\n</script>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
                       { label: 'style', kind: monaco.languages.CompletionItemKind.Snippet, insertText: '<style>\n${1:/* CSS code */}\n</style>', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet }
+                    ]
+                  })
+                });
+                
+                monaco.languages.registerCompletionItemProvider('java', {
+                  provideCompletionItems: () => ({
+                    suggestions: [
+                      { label: 'System.out.println', kind: monaco.languages.CompletionItemKind.Function, insertText: 'System.out.println("${1:text}");', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'main', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'public static void main(String[] args) {\n    ${1:// code}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'class', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'public class ${1:ClassName} {\n    ${2:// code}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'for', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n    ${3:// code}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'if', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'if (${1:condition}) {\n    ${2:// code}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet }
+                    ]
+                  })
+                });
+                
+                monaco.languages.registerCompletionItemProvider('csharp', {
+                  provideCompletionItems: () => ({
+                    suggestions: [
+                      { label: 'Console.WriteLine', kind: monaco.languages.CompletionItemKind.Function, insertText: 'Console.WriteLine("${1:text}");', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'Main', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'static void Main() {\n    ${1:// code}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'class', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'class ${1:ClassName} {\n    ${2:// code}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'for', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n    ${3:// code}\n}', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'using', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'using ${1:System};', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet }
+                    ]
+                  })
+                });
+                
+                monaco.languages.registerCompletionItemProvider('sql', {
+                  provideCompletionItems: () => ({
+                    suggestions: [
+                      { label: 'SELECT', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'SELECT ${1:columns} FROM ${2:table};', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'INSERT', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'INSERT INTO ${1:table} (${2:columns}) VALUES (${3:values});', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'UPDATE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'UPDATE ${1:table} SET ${2:column} = ${3:value} WHERE ${4:condition};', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'DELETE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'DELETE FROM ${1:table} WHERE ${2:condition};', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+                      { label: 'CREATE TABLE', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'CREATE TABLE ${1:table_name} (\n    ${2:column1} ${3:datatype},\n    ${4:column2} ${5:datatype}\n);', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet }
                     ]
                   })
                 });
