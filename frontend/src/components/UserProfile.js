@@ -101,10 +101,15 @@ const UserProfile = ({ darkMode }) => {
     const extensions = {
       python: 'py',
       javascript: 'js',
+      typescript: 'ts',
       c: 'c',
       cpp: 'cpp',
       java: 'java',
       csharp: 'cs',
+      go: 'go',
+      rust: 'rs',
+      swift: 'swift',
+      ruby: 'rb',
       php: 'php',
       sql: 'sql',
       web: 'html'

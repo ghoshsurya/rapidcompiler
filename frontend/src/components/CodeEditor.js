@@ -9,6 +9,16 @@ const LANGUAGE_TEMPLATES = {
 print("Hello, World!")`,
   javascript: `// JavaScript Code
 console.log("Hello, World!");`,
+  typescript: `// TypeScript Code
+interface Greeting {
+    message: string;
+}
+
+const greeting: Greeting = {
+    message: "Hello, World!"
+};
+
+console.log(greeting.message);`,
   c: `#include <stdio.h>
 
 int main() {
@@ -34,6 +44,21 @@ class Program {
         Console.WriteLine("Hello, World!");
     }
 }`,
+  go: `package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+}`,
+  rust: `fn main() {
+    println!("Hello, World!");
+}`,
+  swift: `import Foundation
+
+print("Hello, World!")`,
+  ruby: `# Ruby Code
+puts "Hello, World!"`,
   sql: `-- SQL Query Example
 SELECT 'Hello, World!' AS message;
 
@@ -188,10 +213,15 @@ const CodeEditor = ({ darkMode }) => {
             >
               <option value="python">Python</option>
               <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
               <option value="c">C</option>
               <option value="cpp">C++</option>
               <option value="java">Java</option>
               <option value="csharp">C#</option>
+              <option value="go">Go</option>
+              <option value="rust">Rust</option>
+              <option value="swift">Swift</option>
+              <option value="ruby">Ruby</option>
               <option value="sql">SQL</option>
               <option value="php">PHP</option>
               <option value="web">HTML/CSS/JS</option>
@@ -247,7 +277,9 @@ const CodeEditor = ({ darkMode }) => {
               height="100%"
               language={language === 'cpp' ? 'cpp' : 
                        language === 'web' ? 'html' : 
-                       language === 'csharp' ? 'csharp' : language}
+                       language === 'csharp' ? 'csharp' :
+                       language === 'typescript' ? 'typescript' :
+                       language === 'swift' ? 'swift' : language}
               value={code}
               onChange={setCode}
               theme={darkMode ? 'vs-dark' : 'light'}
