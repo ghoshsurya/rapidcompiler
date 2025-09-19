@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Projects from './pages/Projects';
 import SharedProject from './pages/SharedProject';
+import AdminDashboard from './components/AdminDashboard';
+import UserProfile from './components/UserProfile';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import './index.css';
@@ -33,6 +35,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminDashboard darkMode={darkMode} /></AdminRoute>} />
             <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />
           </Routes>
         </div>
@@ -44,6 +48,11 @@ function App() {
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/login" />;
+}
+
+function AdminRoute({ children }) {
+  const { user } = useAuth();
+  return user?.is_admin ? children : <Navigate to="/" />;
 }
 
 export default App;

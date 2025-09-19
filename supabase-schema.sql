@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) UNIQUE NOT NULL,
   username VARCHAR(50) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  profile_picture TEXT,
+  is_admin BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -16,7 +18,8 @@ CREATE TABLE IF NOT EXISTS projects (
   language VARCHAR(50) NOT NULL,
   code TEXT NOT NULL,
   is_public BOOLEAN DEFAULT FALSE,
-  share_token VARCHAR(255) UNIQUE,
+  is_private BOOLEAN DEFAULT TRUE,
+  share_token VARCHAR(255) UNIQUE DEFAULT gen_random_uuid(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -51,3 +54,9 @@ CREATE POLICY "Users can delete own projects" ON projects
 
 CREATE POLICY "Public projects are viewable by everyone" ON projects
   FOR SELECT USING (is_public = true);
+
+CREATE POLICY "Admins can view all users" ON users
+  FOR SELECT USING (auth.jwt() ->> 'is_admin' = 'true');
+
+CREATE POLICY "Admins can view all projects" ON projects
+  FOR SELECT USING (auth.jwt() ->> 'is_admin' = 'true');

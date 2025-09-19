@@ -34,10 +34,24 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                 to="/projects"
                 className={`px-2 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} hidden sm:block`}
               >
-                My Projects
+                Projects
               </Link>
               <Link
-                to="/projects"
+                to="/profile"
+                className={`px-2 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} hidden sm:block`}
+              >
+                Profile
+              </Link>
+              {user.is_admin && (
+                <Link
+                  to="/admin"
+                  className={`px-2 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base rounded-lg bg-red-600 text-white hover:bg-red-700 hidden sm:block`}
+                >
+                  Admin
+                </Link>
+              )}
+              <Link
+                to="/profile"
                 className={`p-1.5 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} sm:hidden`}
               >
                 <User className="h-4 w-4" />
