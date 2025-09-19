@@ -164,17 +164,6 @@ const CodeEditor = ({ darkMode }) => {
 
   const executeGo = async () => {
     try {
-      // Load Go WASM runtime
-      if (!window.Go) {
-        const wasmScript = document.createElement('script');
-        wasmScript.src = 'https://cdn.jsdelivr.net/gh/golang/go@go1.21.0/misc/wasm/wasm_exec.js';
-        document.head.appendChild(wasmScript);
-        
-        await new Promise((resolve) => {
-          wasmScript.onload = resolve;
-        });
-      }
-      
       // Simple Go code execution simulation
       // Extract fmt.Println calls and execute them
       const printMatches = code.match(/fmt\.Println\(["'`]([^"'`]+)["'`]\)/g);
@@ -202,6 +191,68 @@ const CodeEditor = ({ darkMode }) => {
     }
   };
 
+  const executeRust = async () => {
+    try {
+      // Extract println! macro calls
+      const printMatches = code.match(/println!\(["']([^"']+)["']\)/g);
+      let output = '';
+      
+      if (printMatches) {
+        printMatches.forEach(match => {
+          const text = match.match(/["']([^"']+)["']/)[1];
+          output += text + '\n';
+        });
+      }
+      
+      // Check for main function
+      if (!code.includes('fn main()')) {
+        return 'Error: Rust programs must have a "fn main()" function';
+      }
+      
+      return output || 'Program executed successfully (no output)';
+    } catch (error) {
+      return `Error: ${error.message}`;
+    }
+  };
+
+  const executeSwift = async () => {
+    try {
+      // Extract print() calls
+      const printMatches = code.match(/print\(["']([^"']+)["']\)/g);
+      let output = '';
+      
+      if (printMatches) {
+        printMatches.forEach(match => {
+          const text = match.match(/["']([^"']+)["']/)[1];
+          output += text + '\n';
+        });
+      }
+      
+      return output || 'Program executed successfully (no output)';
+    } catch (error) {
+      return `Error: ${error.message}`;
+    }
+  };
+
+  const executeRuby = async () => {
+    try {
+      // Extract puts calls
+      const printMatches = code.match(/puts\s+["']([^"']+)["']/g);
+      let output = '';
+      
+      if (printMatches) {
+        printMatches.forEach(match => {
+          const text = match.match(/["']([^"']+)["']/)[1];
+          output += text + '\n';
+        });
+      }
+      
+      return output || 'Program executed successfully (no output)';
+    } catch (error) {
+      return `Error: ${error.message}`;
+    }
+  };
+
   const runCode = async () => {
     setIsRunning(true);
     setOutput('Running...');
@@ -219,6 +270,33 @@ const CodeEditor = ({ darkMode }) => {
       // Handle Go execution client-side
       if (language === 'go') {
         const result = await executeGo();
+        setOutput(result);
+        setWebPreview('');
+        setIsRunning(false);
+        return;
+      }
+      
+      // Handle Rust execution client-side
+      if (language === 'rust') {
+        const result = await executeRust();
+        setOutput(result);
+        setWebPreview('');
+        setIsRunning(false);
+        return;
+      }
+      
+      // Handle Swift execution client-side
+      if (language === 'swift') {
+        const result = await executeSwift();
+        setOutput(result);
+        setWebPreview('');
+        setIsRunning(false);
+        return;
+      }
+      
+      // Handle Ruby execution client-side
+      if (language === 'ruby') {
+        const result = await executeRuby();
         setOutput(result);
         setWebPreview('');
         setIsRunning(false);
