@@ -202,7 +202,20 @@ export const AuthProvider = ({ children }) => {
   const resetPassword = async (email) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: `${window.location.origin}/auth/callback`
+      });
+      
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updatePasswordWithToken = async (newPassword) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
       });
       
       if (error) throw error;
@@ -251,6 +264,7 @@ export const AuthProvider = ({ children }) => {
     uploadAvatar,
     adminLogin,
     resetPassword,
+    updatePasswordWithToken,
     getAllUsers,
     deleteUser
   };

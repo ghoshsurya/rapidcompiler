@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, AlertCircle, CheckCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -9,14 +9,16 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const { updatePasswordWithToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     // Check if user came from password reset email
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
     
-    if (!accessToken) {
+    if (!accessToken || type !== 'recovery') {
       navigate('/admin/login');
     }
   }, [navigate]);
@@ -38,19 +40,15 @@ const ResetPassword = () => {
       return;
     }
 
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
-
-      if (error) throw error;
-
+    const result = await updatePasswordWithToken(password);
+    
+    if (result.success) {
       setSuccess(true);
       setTimeout(() => {
         navigate('/admin/login');
       }, 2000);
-    } catch (error) {
-      setError(error.message);
+    } else {
+      setError(result.error);
     }
 
     setLoading(false);
@@ -76,10 +74,10 @@ const ResetPassword = () => {
             <Lock className="h-8 w-8 text-white" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Reset Admin Password
+            Set New Password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your new password below
+            Enter your new admin password below
           </p>
         </div>
 
