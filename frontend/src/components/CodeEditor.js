@@ -135,31 +135,71 @@ const CodeEditor = ({ darkMode }) => {
       }
       
       // Compile TypeScript to JavaScript
-      const result = window.ts.transpile(code, {
-        target: window.ts.ScriptTarget.ES2015,
-        module: window.ts.ModuleKind.CommonJS
+      const jsCode = window.ts.transpile(code, {
+        target: window.ts.ScriptTarget.ES2020,
+        module: window.ts.ModuleKind.CommonJS,
+        strict: false
       });
       
-      // Create a safe execution environment
-      const originalConsoleLog = console.log;
-      let output = '';
-      
-      console.log = (...args) => {
-        output += args.join(' ') + '\n';
-      };
-      
-      // Execute the compiled JavaScript
-      try {
-        eval(result);
-        console.log = originalConsoleLog;
-        return output || 'Program executed successfully (no output)';
-      } catch (error) {
-        console.log = originalConsoleLog;
-        return `Runtime Error: ${error.message}`;
-      }
+      // Execute JavaScript with full support
+      return await executeJavaScript(jsCode);
     } catch (error) {
-      return `Compilation Error: ${error.message}`;
+      return `TypeScript Error: ${error.message}`;
     }
+  };
+
+  const executeJavaScript = async (jsCode) => {
+    return new Promise((resolve) => {
+      let output = '';
+      let hasError = false;
+
+      // Create a safe execution environment
+      const originalConsole = { ...console };
+      const inputLines = input.split('\n');
+      let inputIndex = 0;
+
+      // Mock console and input functions
+      const mockConsole = {
+        log: (...args) => { output += args.join(' ') + '\n'; },
+        error: (...args) => { output += 'Error: ' + args.join(' ') + '\n'; },
+        warn: (...args) => { output += 'Warning: ' + args.join(' ') + '\n'; }
+      };
+
+      const mockPrompt = (message) => {
+        if (inputIndex < inputLines.length) {
+          return inputLines[inputIndex++];
+        }
+        return '';
+      };
+
+      // Replace global objects
+      const originalPrompt = window.prompt;
+      window.console = mockConsole;
+      window.prompt = mockPrompt;
+
+      try {
+        // Execute code with timeout
+        const timeoutId = setTimeout(() => {
+          hasError = true;
+          resolve('Execution timeout (5 seconds)');
+        }, 5000);
+
+        // Execute the code
+        eval(jsCode);
+
+        clearTimeout(timeoutId);
+        
+        if (!hasError) {
+          resolve(output || 'Program executed successfully');
+        }
+      } catch (error) {
+        resolve(`Runtime Error: ${error.message}`);
+      } finally {
+        // Restore original objects
+        window.console = originalConsole;
+        window.prompt = originalPrompt;
+      }
+    });
   };
 
   const executeGo = async () => {
