@@ -1,107 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Lock, Download, Share, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
+import { User, Mail, Lock, Camera, Download, Code, Calendar } from 'lucide-react';
 
 const UserProfile = ({ darkMode }) => {
-  const { user, updateUser } = useAuth();
-  const [profile, setProfile] = useState({
+  const { user, updateProfile, updatePassword, uploadAvatar } = useAuth();
+  const [activeTab, setActiveTab] = useState('profile');
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
     username: '',
     email: '',
-    profile_picture: ''
+    full_name: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
-  const [projects, setProjects] = useState([]);
-  const [passwords, setPasswords] = useState({
-    current: '',
-    new: '',
-    confirm: ''
-  });
-  const [activeTab, setActiveTab] = useState('profile');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setProfile({
+      setFormData({
         username: user.username || '',
         email: user.email || '',
-        profile_picture: user.profile_picture || ''
+        full_name: user.full_name || '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
       });
-      fetchUserProjects();
+      fetchProjects();
     }
   }, [user]);
 
-  const fetchUserProjects = async () => {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
-    
-    if (!error) setProjects(data || []);
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+      
+      if (!error) setProjects(data || []);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
   };
 
-  const updateProfile = async (e) => {
+  const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await supabase
-      .from('users')
-      .update({
-        username: profile.username,
-        profile_picture: profile.profile_picture,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', user.id);
-
-    if (!error) {
-      updateUser({ ...user, ...profile });
+    const result = await updateProfile({
+      username: formData.username,
+      full_name: formData.full_name
+    });
+    
+    if (result.success) {
       alert('Profile updated successfully!');
     } else {
-      alert('Failed to update profile');
+      alert('Error: ' + result.error);
     }
     setLoading(false);
   };
 
-  const changePassword = async (e) => {
+  const handlePasswordUpdate = async (e) => {
     e.preventDefault();
-    if (passwords.new !== passwords.confirm) {
-      alert('New passwords do not match');
+    
+    if (formData.newPassword !== formData.confirmPassword) {
+      alert('Passwords do not match!');
       return;
     }
     
     setLoading(true);
-    // Note: In production, you'd verify current password first
-    const { error } = await supabase.auth.updateUser({
-      password: passwords.new
-    });
-
-    if (!error) {
-      alert('Password changed successfully!');
-      setPasswords({ current: '', new: '', confirm: '' });
+    const result = await updatePassword(formData.newPassword);
+    
+    if (result.success) {
+      alert('Password updated successfully!');
+      setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
     } else {
-      alert('Failed to change password');
+      alert('Error: ' + result.error);
     }
     setLoading(false);
   };
 
-  const toggleProjectVisibility = async (projectId, isPublic) => {
-    const { error } = await supabase
-      .from('projects')
-      .update({ is_public: !isPublic })
-      .eq('id', projectId);
-
-    if (!error) {
-      fetchUserProjects();
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setLoading(true);
+    const result = await uploadAvatar(file);
+    
+    if (result.success) {
+      alert('Avatar updated successfully!');
+    } else {
+      alert('Error: ' + result.error);
     }
+    setLoading(false);
   };
 
   const downloadProject = (project) => {
     const extensions = {
       python: 'py',
       javascript: 'js',
-      java: 'java',
-      cpp: 'cpp',
       c: 'c',
+      cpp: 'cpp',
+      java: 'java',
       csharp: 'cs',
       php: 'php',
       sql: 'sql',
@@ -109,79 +111,98 @@ const UserProfile = ({ darkMode }) => {
     };
     
     const extension = extensions[project.language] || 'txt';
+    const filename = `${project.title.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
+    
     const blob = new Blob([project.code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${project.title}.${extension}`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  const shareProject = async (project) => {
-    const shareUrl = `${window.location.origin}/shared/${project.share_token}`;
-    navigator.clipboard.writeText(shareUrl);
-    alert('Share link copied to clipboard!');
-  };
+  if (!user) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-dark-bg text-dark-text' : 'bg-gray-50'}`}>
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8">My Profile</h1>
+    <div className={`min-h-screen p-4 ${darkMode ? 'bg-dark-bg text-dark-text' : 'bg-gray-50'}`}>
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">User Profile</h1>
         
-        {/* Tabs */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'profile'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Profile
-              </button>
-              <button
-                onClick={() => setActiveTab('projects')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'projects'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                My Projects
-              </button>
-              <button
-                onClick={() => setActiveTab('security')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'security'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Security
-              </button>
-            </nav>
+        {/* Profile Header */}
+        <div className={`p-6 rounded-lg mb-6 ${darkMode ? 'bg-dark-surface' : 'bg-white'} shadow-lg`}>
+          <div className="flex items-center space-x-6">
+            <div className="relative">
+              {user.avatar_url ? (
+                <img 
+                  src={user.avatar_url} 
+                  alt="Avatar" 
+                  className="w-24 h-24 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                  {user.username?.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700">
+                <Camera className="h-4 w-4" />
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold">{user.username}</h2>
+              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{user.email}</p>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                Member since {new Date(user.created_at).toLocaleDateString()}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Profile Tab */}
-        {activeTab === 'profile' && (
-          <div className={`rounded-lg ${darkMode ? 'bg-dark-surface' : 'bg-white'} shadow p-6`}>
-            <h3 className="text-lg font-medium mb-6">Profile Information</h3>
-            <form onSubmit={updateProfile}>
+        {/* Tabs */}
+        <div className={`border-b ${darkMode ? 'border-dark-border' : 'border-gray-200'} mb-6`}>
+          <nav className="flex space-x-8">
+            {[
+              { id: 'profile', label: 'Profile Settings', icon: User },
+              { id: 'security', label: 'Security', icon: Lock },
+              { id: 'projects', label: 'My Projects', icon: Code }
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === id
+                    ? 'border-blue-500 text-blue-600'
+                    : `border-transparent ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        <div className={`p-6 rounded-lg ${darkMode ? 'bg-dark-surface' : 'bg-white'} shadow-lg`}>
+          {activeTab === 'profile' && (
+            <form onSubmit={handleProfileUpdate} className="space-y-6">
+              <h3 className="text-xl font-semibold mb-4">Profile Information</h3>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    <User className="inline h-4 w-4 mr-2" />
-                    Username
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Username</label>
                   <input
                     type="text"
-                    value={profile.username}
-                    onChange={(e) => setProfile({...profile, username: e.target.value})}
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     className={`w-full px-3 py-2 border rounded-lg ${
                       darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
                     }`}
@@ -189,136 +210,56 @@ const UserProfile = ({ darkMode }) => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    <Mail className="inline h-4 w-4 mr-2" />
-                    Email
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
+                    }`}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
                   <input
                     type="email"
-                    value={profile.email}
+                    value={formData.email}
                     disabled
                     className={`w-full px-3 py-2 border rounded-lg opacity-50 ${
                       darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-gray-100 border-gray-300'
                     }`}
                   />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Profile Picture URL</label>
-                  <input
-                    type="url"
-                    value={profile.profile_picture}
-                    onChange={(e) => setProfile({...profile, profile_picture: e.target.value})}
-                    placeholder="https://example.com/avatar.jpg"
-                    className={`w-full px-3 py-2 border rounded-lg ${
-                      darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
-                    }`}
-                  />
+                  <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
                 </div>
               </div>
               
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
                 {loading ? 'Updating...' : 'Update Profile'}
               </button>
             </form>
-          </div>
-        )}
+          )}
 
-        {/* Projects Tab */}
-        {activeTab === 'projects' && (
-          <div className={`rounded-lg ${darkMode ? 'bg-dark-surface' : 'bg-white'} shadow overflow-hidden`}>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium">My Projects ({projects.length})</h3>
-            </div>
-            <div className="divide-y divide-gray-200">
-              {projects.map((project) => (
-                <div key={project.id} className="p-6 flex items-center justify-between">
-                  <div className="flex-1">
-                    <h4 className="text-lg font-medium">{project.title}</h4>
-                    <p className="text-sm text-gray-500">
-                      {project.language} • Updated {new Date(project.updated_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      project.is_public 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {project.is_public ? 'Public' : 'Private'}
-                    </span>
-                    
-                    <button
-                      onClick={() => toggleProjectVisibility(project.id, project.is_public)}
-                      className="p-2 text-gray-500 hover:text-gray-700"
-                      title={project.is_public ? 'Make Private' : 'Make Public'}
-                    >
-                      {project.is_public ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                    
-                    <button
-                      onClick={() => shareProject(project)}
-                      className="p-2 text-gray-500 hover:text-gray-700"
-                      title="Share Project"
-                    >
-                      <Share className="h-4 w-4" />
-                    </button>
-                    
-                    <button
-                      onClick={() => downloadProject(project)}
-                      className="p-2 text-gray-500 hover:text-gray-700"
-                      title="Download Code"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+          {activeTab === 'security' && (
+            <form onSubmit={handlePasswordUpdate} className="space-y-6">
+              <h3 className="text-xl font-semibold mb-4">Change Password</h3>
               
-              {projects.length === 0 && (
-                <div className="p-6 text-center text-gray-500">
-                  No projects yet. Start coding to see your projects here!
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Security Tab */}
-        {activeTab === 'security' && (
-          <div className={`rounded-lg ${darkMode ? 'bg-dark-surface' : 'bg-white'} shadow p-6`}>
-            <h3 className="text-lg font-medium mb-6">Change Password</h3>
-            <form onSubmit={changePassword}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    <Lock className="inline h-4 w-4 mr-2" />
-                    Current Password
-                  </label>
-                  <input
-                    type="password"
-                    value={passwords.current}
-                    onChange={(e) => setPasswords({...passwords, current: e.target.value})}
-                    className={`w-full px-3 py-2 border rounded-lg ${
-                      darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
-                    }`}
-                  />
-                </div>
-                
+              <div className="space-y-4 max-w-md">
                 <div>
                   <label className="block text-sm font-medium mb-2">New Password</label>
                   <input
                     type="password"
-                    value={passwords.new}
-                    onChange={(e) => setPasswords({...passwords, new: e.target.value})}
+                    value={formData.newPassword}
+                    onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                     className={`w-full px-3 py-2 border rounded-lg ${
                       darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
                     }`}
+                    required
                   />
                 </div>
                 
@@ -326,11 +267,12 @@ const UserProfile = ({ darkMode }) => {
                   <label className="block text-sm font-medium mb-2">Confirm New Password</label>
                   <input
                     type="password"
-                    value={passwords.confirm}
-                    onChange={(e) => setPasswords({...passwords, confirm: e.target.value})}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     className={`w-full px-3 py-2 border rounded-lg ${
                       darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
                     }`}
+                    required
                   />
                 </div>
               </div>
@@ -338,13 +280,57 @@ const UserProfile = ({ darkMode }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
               >
-                {loading ? 'Changing...' : 'Change Password'}
+                {loading ? 'Updating...' : 'Update Password'}
               </button>
             </form>
-          </div>
-        )}
+          )}
+
+          {activeTab === 'projects' && (
+            <div>
+              <h3 className="text-xl font-semibold mb-4">My Projects ({projects.length})</h3>
+              
+              {projects.length === 0 ? (
+                <p className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  No projects found. Start coding to see your projects here!
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {projects.map((project) => (
+                    <div key={project.id} className={`p-4 border rounded-lg ${
+                      darkMode ? 'border-dark-border bg-dark-bg' : 'border-gray-200 bg-gray-50'
+                    }`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-semibold truncate">{project.title}</h4>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          darkMode ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {project.language}
+                        </span>
+                      </div>
+                      
+                      <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <Calendar className="h-3 w-3 inline mr-1" />
+                        {new Date(project.updated_at).toLocaleDateString()}
+                      </p>
+                      
+                      <button
+                        onClick={() => downloadProject(project)}
+                        className={`flex items-center space-x-1 text-sm px-3 py-1 rounded hover:bg-opacity-80 ${
+                          darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        <Download className="h-3 w-3" />
+                        <span>Download</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

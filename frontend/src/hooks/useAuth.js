@@ -38,91 +38,48 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchUserProfile = async (userId) => {
-    console.log('Fetching user profile for:', userId);
     const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .single();
     
-    console.log('Profile data:', data, 'Error:', error);
-    
     if (!error && data) {
       setUser(data);
-    } else if (error) {
-      console.error('Profile fetch error:', error);
     }
   };
 
   const login = async (email, password) => {
     try {
-      console.log('Attempting login for:', email);
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
       
-      if (error) {
-        console.error('Login error:', error);
-        throw error;
-      }
-      
-      console.log('Login successful:', data.user?.id);
+      if (error) throw error;
       return { success: true };
     } catch (error) {
-      console.error('Login failed:', error);
-      return { 
-        success: false, 
-        error: error.message || 'Login failed' 
-      };
+      return { success: false, error: error.message };
     }
   };
 
-  const register = async (username, email, password) => {
+  const register = async (username, email, password, fullName = '') => {
     try {
-      console.log('Registering user:', { username, email });
-      
-      // First create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            username,
+            full_name: fullName
+          }
+        }
       });
       
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw authError;
-      }
-      
-      console.log('Auth user created:', authData.user?.id);
-      
-      // Then create user profile
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: authData.user.id,
-            username,
-            email,
-            password_hash: 'handled_by_supabase_auth',
-            is_admin: false
-          });
-        
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          throw profileError;
-        }
-        
-        console.log('User profile created successfully');
-      }
-      
+      if (authError) throw authError;
       return { success: true };
     } catch (error) {
-      console.error('Registration error:', error);
-      return { 
-        success: false, 
-        error: error.message || 'Registration failed' 
-      };
+      return { success: false, error: error.message };
     }
   };
 
@@ -131,17 +88,119 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const updateUser = (updatedUser) => {
-    setUser(updatedUser);
+  const updateProfile = async (updates) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      setUser({ ...user, ...updates });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updatePassword = async (newPassword) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const uploadAvatar = async (file) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+      
+      await updateProfile({ avatar_url: data.publicUrl });
+      return { success: true, url: data.publicUrl };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const adminLogin = async (email, password) => {
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        // Check if user is admin
+        const { data } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('email', email)
+          .single();
+        
+        if (!data?.is_admin) {
+          await logout();
+          return { success: false, error: 'Access denied. Admin privileges required.' };
+        }
+      }
+      return result;
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getAllUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+      
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   };
 
   const value = {
     user,
+    loading,
     login,
     register,
     logout,
-    updateUser,
-    loading
+    updateProfile,
+    updatePassword,
+    uploadAvatar,
+    adminLogin,
+    getAllUsers,
+    deleteUser
   };
 
   return (

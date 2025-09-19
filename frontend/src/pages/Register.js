@@ -6,6 +6,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
+    fullName: '',
     password: '',
     confirmPassword: ''
   });
@@ -32,7 +33,7 @@ const Register = () => {
       return;
     }
 
-    const result = await register(formData.username, formData.email, formData.password);
+    const result = await register(formData.username, formData.email, formData.password, formData.fullName);
     
     if (result.success) {
       navigate('/');
@@ -88,6 +89,21 @@ const Register = () => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your email"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="fullName" className="block text-sm font-medium mb-1">
+                Full Name (Optional)
+              </label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                value={formData.fullName}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your full name"
               />
             </div>
             

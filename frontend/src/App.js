@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Projects from './pages/Projects';
 import SharedProject from './pages/SharedProject';
+import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import UserProfile from './components/UserProfile';
 import Navbar from './components/Navbar';
@@ -29,15 +30,25 @@ function App() {
     <AuthProvider>
       <Router>
         <div className={`min-h-screen ${darkMode ? 'dark bg-dark-bg text-dark-text' : 'bg-gray-50'}`}>
-          <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
           <Routes>
-            <Route path="/" element={<CodeEditor darkMode={darkMode} />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
+            {/* Admin routes without navbar */}
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard darkMode={darkMode} /></AdminRoute>} />
-            <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />
+            
+            {/* Regular routes with navbar */}
+            <Route path="/*" element={
+              <>
+                <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+                <Routes>
+                  <Route path="/" element={<CodeEditor darkMode={darkMode} />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
+                  <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />
+                </Routes>
+              </>
+            } />
           </Routes>
         </div>
       </Router>
@@ -52,7 +63,7 @@ function ProtectedRoute({ children }) {
 
 function AdminRoute({ children }) {
   const { user } = useAuth();
-  return user?.is_admin ? children : <Navigate to="/" />;
+  return user?.is_admin ? children : <Navigate to="/admin/login" />;
 }
 
 export default App;
