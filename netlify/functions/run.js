@@ -132,30 +132,32 @@ function executeCode(command, args, input) {
 async function executeWithJudge0(language, code, input) {
   const https = require('https');
   
-  const languageIds = {
-    'c': 50,
-    'cpp': 54,
-    'php': 68
+  const languageMap = {
+    'c': 'c',
+    'cpp': 'cpp',
+    'php': 'php'
   };
 
-  const submission = {
-    source_code: Buffer.from(code).toString('base64'),
-    language_id: languageIds[language],
-    stdin: input ? Buffer.from(input).toString('base64') : ''
+  const payload = {
+    language: languageMap[language],
+    version: 'latest',
+    files: [{
+      name: language === 'cpp' ? 'main.cpp' : language === 'c' ? 'main.c' : 'main.php',
+      content: code
+    }],
+    stdin: input || ''
   };
 
   return new Promise((resolve, reject) => {
-    const postData = JSON.stringify(submission);
+    const postData = JSON.stringify(payload);
     
     const options = {
-      hostname: 'judge0-ce.p.rapidapi.com',
+      hostname: 'emkc.org',
       port: 443,
-      path: '/submissions?base64_encoded=true&wait=true',
+      path: '/api/v2/piston/execute',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-RapidAPI-Key': 'demo-key',
-        'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com',
         'Content-Length': Buffer.byteLength(postData)
       }
     };
@@ -170,30 +172,32 @@ async function executeWithJudge0(language, code, input) {
       res.on('end', () => {
         try {
           const result = JSON.parse(data);
+          console.log('API Response:', result); // Debug log
           
-          if (result.stdout) {
+          if (result.run && result.run.stdout) {
             resolve({
-              output: Buffer.from(result.stdout, 'base64').toString(),
+              output: result.run.stdout,
               error: null
             });
-          } else if (result.stderr) {
+          } else if (result.run && result.run.stderr) {
             resolve({
-              output: '',
-              error: Buffer.from(result.stderr, 'base64').toString()
+              output: result.run.stdout || '',
+              error: result.run.stderr
             });
-          } else if (result.compile_output) {
+          } else if (result.compile && result.compile.stderr) {
             resolve({
               output: '',
-              error: Buffer.from(result.compile_output, 'base64').toString()
+              error: result.compile.stderr
             });
           } else {
+            // Fallback - return whatever we got
             resolve({
-              output: '',
-              error: 'No output generated'
+              output: JSON.stringify(result, null, 2),
+              error: null
             });
           }
         } catch (e) {
-          resolve({ output: '', error: 'Failed to parse response' });
+          resolve({ output: '', error: `Parse error: ${e.message}` });
         }
       });
     });
@@ -202,9 +206,9 @@ async function executeWithJudge0(language, code, input) {
       resolve({ output: '', error: `Network error: ${e.message}` });
     });
 
-    req.setTimeout(15000, () => {
+    req.setTimeout(10000, () => {
       req.destroy();
-      resolve({ output: '', error: 'Execution timeout' });
+      resolve({ output: '', error: 'Request timeout' });
     });
 
     req.write(postData);
