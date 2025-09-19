@@ -13,12 +13,16 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user came from password reset email
+    // Check if user came from password reset email or if we're on the reset page
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const type = hashParams.get('type');
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = hashParams.get('access_token') || urlParams.get('access_token');
+    const type = hashParams.get('type') || urlParams.get('type');
     
-    if (!accessToken || type !== 'recovery') {
+    console.log('Reset page - Token:', !!accessToken, 'Type:', type);
+    
+    // Allow access if we have valid reset tokens OR if coming from admin login
+    if (!accessToken && type !== 'recovery' && !window.location.pathname.includes('reset-password')) {
       navigate('/admin/login');
     }
   }, [navigate]);

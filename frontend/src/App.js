@@ -31,14 +31,22 @@ function App() {
 
   // Handle password reset on page load
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const type = hashParams.get('type');
+    const checkForReset = () => {
+      const hash = window.location.hash;
+      console.log('Current hash:', hash);
+      
+      if (hash.includes('access_token') && hash.includes('type=recovery')) {
+        console.log('Detected password reset, redirecting...');
+        // Use replace to avoid back button issues
+        window.location.replace('/reset-password' + hash);
+      }
+    };
     
-    if (accessToken && type === 'recovery') {
-      // Redirect to reset password page
-      window.location.href = '/reset-password';
-    }
+    checkForReset();
+    
+    // Also listen for hash changes
+    window.addEventListener('hashchange', checkForReset);
+    return () => window.removeEventListener('hashchange', checkForReset);
   }, []);
 
   return (

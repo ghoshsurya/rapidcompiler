@@ -157,6 +157,13 @@ const AdminLogin = () => {
             >
               Regular user login
             </Link>
+            <br />
+            <Link
+              to="/reset-password"
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Test Reset Page
+            </Link>
           </div>
         </form>
 
