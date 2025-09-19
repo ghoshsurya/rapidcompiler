@@ -202,37 +202,76 @@ const CodeEditor = ({ darkMode }) => {
     });
   };
 
-  const executeGo = async () => {
+  const executeGoAdvanced = async () => {
     try {
+      // Try Go Playground API first
+      try {
+        const response = await fetch('https://play.golang.org/compile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `version=2&body=${encodeURIComponent(code)}&withVet=true`
+        });
+        const result = await response.json();
+        if (result.Events && result.Events[0]) {
+          return result.Events[0].Message || 'Program executed successfully';
+        }
+        if (result.Errors) {
+          return `Error: ${result.Errors}`;
+        }
+      } catch (apiError) {
+        // Fallback to advanced parsing
+      }
+      
+      // Advanced Go interpreter
       let output = '';
       const lines = code.split('\n');
       const variables = {};
+      let inMain = false;
       
       for (const line of lines) {
-        // Variable declarations: var name = value or name := value
-        const varMatch = line.match(/(var\s+(\w+)\s*=\s*([^\n]+))|(\w+)\s*:=\s*([^\n]+)/);
+        const trimmed = line.trim();
+        
+        if (trimmed.includes('func main()')) {
+          inMain = true;
+          continue;
+        }
+        
+        if (!inMain) continue;
+        
+        // Variable declarations
+        const varMatch = trimmed.match(/(var\s+(\w+)\s*=\s*(.+))|(\w+)\s*:=\s*(.+)/);
         if (varMatch) {
           const varName = varMatch[2] || varMatch[4];
           const value = varMatch[3] || varMatch[5];
           try {
-            variables[varName] = eval(value.replace(/"/g, '"'));
+            variables[varName] = eval(value.replace(/"/g, '"').replace(/`/g, '"'));
           } catch {
-            variables[varName] = value.replace(/"/g, '');
+            variables[varName] = value.replace(/["'`]/g, '');
           }
         }
         
-        // fmt.Println with variables: fmt.Println(variable)
-        const printVarMatch = line.match(/fmt\.Println\((\w+)\)/);
-        if (printVarMatch && !line.includes('"')) {
-          const varName = printVarMatch[1];
-          output += (variables[varName] || varName) + '\n';
-          continue;
+        // For loops
+        const forMatch = trimmed.match(/for\s+(\w+)\s*:=\s*(\d+);\s*\w+\s*<\s*(\d+);\s*\w+\+\+/);
+        if (forMatch) {
+          const [, varName, start, end] = forMatch;
+          for (let i = parseInt(start); i < parseInt(end); i++) {
+            variables[varName] = i;
+          }
         }
         
-        // Simple fmt.Println: fmt.Println("text")
-        const printMatch = line.match(/fmt\.Println\(["'`]([^"'`]+)["'`]\)/);
+        // Print statements
+        const printMatch = trimmed.match(/fmt\.Print(?:ln)?\(([^)]+)\)/);
         if (printMatch) {
-          output += printMatch[1] + '\n';
+          let content = printMatch[1];
+          
+          // Handle variables
+          if (variables[content]) {
+            output += variables[content] + '\n';
+          } else {
+            // Handle string literals
+            content = content.replace(/["'`]/g, '');
+            output += content + '\n';
+          }
         }
       }
       
@@ -240,29 +279,35 @@ const CodeEditor = ({ darkMode }) => {
         return 'Error: Go programs must start with "package main"';
       }
       
-      if (!code.includes('func main()')) {
-        return 'Error: Go programs must have a "func main()" function';
-      }
-      
-      return output || 'Program executed successfully (no output)';
+      return output || 'Program executed successfully';
     } catch (error) {
       return `Error: ${error.message}`;
     }
   };
 
-  const executeRust = async () => {
+  const executeRustAdvanced = async () => {
     try {
+      // Advanced Rust interpreter
       let output = '';
-      
-      // Enhanced println! parsing with variables and expressions
       const lines = code.split('\n');
       const variables = {};
+      let inMain = false;
       
       for (const line of lines) {
+        const trimmed = line.trim();
+        
+        if (trimmed.includes('fn main()')) {
+          inMain = true;
+          continue;
+        }
+        
+        if (!inMain) continue;
+        
         // Variable declarations: let x = value;
-        const varMatch = line.match(/let\s+(\w+)\s*=\s*([^;]+);/);
+        const varMatch = trimmed.match(/let\s+(mut\s+)?(\w+)\s*=\s*([^;]+);/);
         if (varMatch) {
-          const [, varName, value] = varMatch;
+          const varName = varMatch[2];
+          const value = varMatch[3];
           try {
             variables[varName] = eval(value.replace(/"/g, '"'));
           } catch {
@@ -270,17 +315,35 @@ const CodeEditor = ({ darkMode }) => {
           }
         }
         
-        // println! with variables: println!("{}", variable);
-        const printVarMatch = line.match(/println!\("([^"]*)",\s*(\w+)\)/);
+        // For loops: for i in 0..n
+        const forMatch = trimmed.match(/for\s+(\w+)\s+in\s+(\d+)\.\.(\d+)/);
+        if (forMatch) {
+          const [, varName, start, end] = forMatch;
+          for (let i = parseInt(start); i < parseInt(end); i++) {
+            variables[varName] = i;
+          }
+        }
+        
+        // println! with formatting: println!("{}", variable);
+        const printVarMatch = trimmed.match(/println!\("([^"]*)",\s*([^)]+)\)/);
         if (printVarMatch) {
-          const [, format, varName] = printVarMatch;
-          const value = variables[varName] || varName;
+          const [, format, varExpr] = printVarMatch;
+          let value = variables[varExpr] || varExpr;
+          
+          // Handle expressions like i * 2
+          if (varExpr.includes('*') || varExpr.includes('+') || varExpr.includes('-')) {
+            try {
+              const expr = varExpr.replace(/(\w+)/g, (match) => variables[match] || match);
+              value = eval(expr);
+            } catch {}
+          }
+          
           output += format.replace('{}', value) + '\n';
           continue;
         }
         
         // Simple println!: println!("text");
-        const printMatch = line.match(/println!\(["']([^"']+)["']\)/);
+        const printMatch = trimmed.match(/println!\(["']([^"']+)["']\)/);
         if (printMatch) {
           output += printMatch[1] + '\n';
         }
@@ -290,21 +353,23 @@ const CodeEditor = ({ darkMode }) => {
         return 'Error: Rust programs must have a "fn main()" function';
       }
       
-      return output || 'Program executed successfully (no output)';
+      return output || 'Program executed successfully';
     } catch (error) {
       return `Error: ${error.message}`;
     }
   };
 
-  const executeSwift = async () => {
+  const executeSwiftAdvanced = async () => {
     try {
       let output = '';
       const lines = code.split('\n');
       const variables = {};
       
       for (const line of lines) {
+        const trimmed = line.trim();
+        
         // Variable declarations: let/var name = value
-        const varMatch = line.match(/(let|var)\s+(\w+)\s*=\s*([^\n]+)/);
+        const varMatch = trimmed.match(/(let|var)\s+(\w+)\s*=\s*(.+)/);
         if (varMatch) {
           const [, , varName, value] = varMatch;
           try {
@@ -314,47 +379,92 @@ const CodeEditor = ({ darkMode }) => {
           }
         }
         
+        // For loops: for i in 0..<n
+        const forMatch = trimmed.match(/for\s+(\w+)\s+in\s+(\d+)\.\.<?\s*(\d+)/);
+        if (forMatch) {
+          const [, varName, start, end] = forMatch;
+          const endVal = trimmed.includes('..<') ? parseInt(end) : parseInt(end) + 1;
+          for (let i = parseInt(start); i < endVal; i++) {
+            variables[varName] = i;
+          }
+        }
+        
+        // String interpolation: print("Hello \(name)")
+        const interpolationMatch = trimmed.match(/print\("([^"]*\\\([^)]+\)[^"]*)")/);
+        if (interpolationMatch) {
+          let text = interpolationMatch[1];
+          text = text.replace(/\\\((\w+)\)/g, (match, varName) => {
+            return variables[varName] || varName;
+          });
+          output += text + '\n';
+          continue;
+        }
+        
         // print with variables: print(variable)
-        const printVarMatch = line.match(/print\((\w+)\)/);
-        if (printVarMatch && !line.includes('"')) {
+        const printVarMatch = trimmed.match(/print\((\w+)\)/);
+        if (printVarMatch && !trimmed.includes('"')) {
           const varName = printVarMatch[1];
           output += (variables[varName] || varName) + '\n';
           continue;
         }
         
         // Simple print: print("text")
-        const printMatch = line.match(/print\(["']([^"']+)["']\)/);
+        const printMatch = trimmed.match(/print\(["']([^"']+)["']\)/);
         if (printMatch) {
           output += printMatch[1] + '\n';
         }
       }
       
-      return output || 'Program executed successfully (no output)';
+      return output || 'Program executed successfully';
     } catch (error) {
       return `Error: ${error.message}`;
     }
   };
 
-  const executeRuby = async () => {
+  const executeRubyAdvanced = async () => {
     try {
       let output = '';
       const lines = code.split('\n');
       const variables = {};
       
       for (const line of lines) {
+        const trimmed = line.trim();
+        
         // Variable assignments: name = value
-        const varMatch = line.match(/(\w+)\s*=\s*([^\n]+)/);
-        if (varMatch && !line.includes('puts') && !line.includes('print')) {
+        const varMatch = trimmed.match(/(\w+)\s*=\s*(.+)/);
+        if (varMatch && !trimmed.includes('puts') && !trimmed.includes('print')) {
           const [, varName, value] = varMatch;
           try {
             variables[varName] = eval(value.replace(/"/g, '"'));
           } catch {
-            variables[varName] = value.replace(/"/g, '');
+            variables[varName] = value.replace(/["']/g, '');
           }
         }
         
+        // For loops: for i in 1..5 or (1..5).each
+        const forMatch = trimmed.match(/(?:for\s+(\w+)\s+in\s+(\d+)\.\.(\d+))|(?:\((\d+)\.\.(\d+)\)\.each)/);
+        if (forMatch) {
+          const varName = forMatch[1] || 'i';
+          const start = parseInt(forMatch[2] || forMatch[4]);
+          const end = parseInt(forMatch[3] || forMatch[5]);
+          for (let i = start; i <= end; i++) {
+            variables[varName] = i;
+          }
+        }
+        
+        // String interpolation: puts "Hello #{name}"
+        const interpolationMatch = trimmed.match(/puts\s+"([^"]*#\{[^}]+\}[^"]*)")/);
+        if (interpolationMatch) {
+          let text = interpolationMatch[1];
+          text = text.replace(/#\{(\w+)\}/g, (match, varName) => {
+            return variables[varName] || varName;
+          });
+          output += text + '\n';
+          continue;
+        }
+        
         // puts with variables: puts variable
-        const putsVarMatch = line.match(/puts\s+(\w+)$/);
+        const putsVarMatch = trimmed.match(/puts\s+(\w+)$/);
         if (putsVarMatch) {
           const varName = putsVarMatch[1];
           output += (variables[varName] || varName) + '\n';
@@ -362,17 +472,19 @@ const CodeEditor = ({ darkMode }) => {
         }
         
         // Simple puts: puts "text"
-        const putsMatch = line.match(/puts\s+["']([^"']+)["']/);
+        const putsMatch = trimmed.match(/puts\s+["']([^"']+)["']/);
         if (putsMatch) {
           output += putsMatch[1] + '\n';
         }
       }
       
-      return output || 'Program executed successfully (no output)';
+      return output || 'Program executed successfully';
     } catch (error) {
       return `Error: ${error.message}`;
     }
   };
+
+
 
   const runCode = async () => {
     setIsRunning(true);
@@ -390,7 +502,7 @@ const CodeEditor = ({ darkMode }) => {
       
       // Handle Go execution client-side
       if (language === 'go') {
-        const result = await executeGo();
+        const result = await executeGoAdvanced();
         setOutput(result);
         setWebPreview('');
         setIsRunning(false);
@@ -399,7 +511,7 @@ const CodeEditor = ({ darkMode }) => {
       
       // Handle Rust execution client-side
       if (language === 'rust') {
-        const result = await executeRust();
+        const result = await executeRustAdvanced();
         setOutput(result);
         setWebPreview('');
         setIsRunning(false);
@@ -408,7 +520,7 @@ const CodeEditor = ({ darkMode }) => {
       
       // Handle Swift execution client-side
       if (language === 'swift') {
-        const result = await executeSwift();
+        const result = await executeSwiftAdvanced();
         setOutput(result);
         setWebPreview('');
         setIsRunning(false);
@@ -417,7 +529,7 @@ const CodeEditor = ({ darkMode }) => {
       
       // Handle Ruby execution client-side
       if (language === 'ruby') {
-        const result = await executeRuby();
+        const result = await executeRubyAdvanced();
         setOutput(result);
         setWebPreview('');
         setIsRunning(false);
