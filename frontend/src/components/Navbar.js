@@ -42,7 +42,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
               >
                 Profile
               </Link>
-              {user.is_admin && (
+              {user?.is_admin && (
                 <Link
                   to="/admin"
                   className={`px-2 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base rounded-lg bg-red-600 text-white hover:bg-red-700 hidden sm:block`}
@@ -58,7 +58,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
               </Link>
               <div className="hidden md:flex items-center space-x-2">
                 <User className="h-5 w-5" />
-                <span className="text-sm">{user.username}</span>
+                <span className="text-sm">{user?.username || 'User'}</span>
               </div>
               <button
                 onClick={handleLogout}
