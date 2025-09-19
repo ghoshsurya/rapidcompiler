@@ -54,10 +54,10 @@ exports.handler = async (event, context) => {
     }
   }
 
-  // Python execution
+  // Python execution using Piston API
   if (language === 'python') {
     try {
-      const result = await executeCode('python3', ['-c', code], input);
+      const result = await executeWithJudge0(language, code, input);
       return {
         statusCode: 200,
         body: JSON.stringify(result)
@@ -135,20 +135,24 @@ async function executeWithJudge0(language, code, input) {
   const languageMap = {
     'c': 'c',
     'cpp': 'c++',
-    'php': 'php'
+    'php': 'php',
+    'python': 'python'
   };
 
   const versionMap = {
     'c': '10.2.0',
     'cpp': '10.2.0', 
-    'php': '8.2.3'
+    'php': '8.2.3',
+    'python': '3.10.0'
   };
 
   const payload = {
     language: languageMap[language],
     version: versionMap[language],
     files: [{
-      name: language === 'cpp' ? 'main.cpp' : language === 'c' ? 'main.c' : 'main.php',
+      name: language === 'cpp' ? 'main.cpp' : 
+            language === 'c' ? 'main.c' : 
+            language === 'python' ? 'main.py' : 'main.php',
       content: code
     }],
     stdin: input || ''
