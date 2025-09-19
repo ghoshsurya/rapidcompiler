@@ -29,6 +29,18 @@ function App() {
     }
   }, [darkMode]);
 
+  // Handle password reset on page load
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    
+    if (accessToken && type === 'recovery') {
+      // Redirect to reset password page
+      window.location.href = '/reset-password';
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
@@ -50,7 +62,6 @@ function App() {
                   <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
                   <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />
-                  <Route path="/auth/callback" element={<PasswordResetHandler />} />
                 </Routes>
                 <AuthDebug />
               </>

@@ -10,8 +10,11 @@ const PasswordResetHandler = () => {
     const accessToken = hashParams.get('access_token');
     const type = hashParams.get('type');
     
+    console.log('Callback params:', { accessToken: !!accessToken, type });
+    
     if (accessToken && type === 'recovery') {
-      // Redirect to reset password page
+      // Store the session and redirect to reset password page
+      localStorage.setItem('supabase.auth.token', accessToken);
       navigate('/reset-password');
     } else {
       // Not a valid reset link, redirect to home
