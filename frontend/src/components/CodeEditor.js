@@ -164,19 +164,38 @@ const CodeEditor = ({ darkMode }) => {
 
   const executeGo = async () => {
     try {
-      // Simple Go code execution simulation
-      // Extract fmt.Println calls and execute them
-      const printMatches = code.match(/fmt\.Println\(["'`]([^"'`]+)["'`]\)/g);
       let output = '';
+      const lines = code.split('\n');
+      const variables = {};
       
-      if (printMatches) {
-        printMatches.forEach(match => {
-          const text = match.match(/["'`]([^"'`]+)["'`]/)[1];
-          output += text + '\n';
-        });
+      for (const line of lines) {
+        // Variable declarations: var name = value or name := value
+        const varMatch = line.match(/(var\s+(\w+)\s*=\s*([^\n]+))|(\w+)\s*:=\s*([^\n]+)/);
+        if (varMatch) {
+          const varName = varMatch[2] || varMatch[4];
+          const value = varMatch[3] || varMatch[5];
+          try {
+            variables[varName] = eval(value.replace(/"/g, '"'));
+          } catch {
+            variables[varName] = value.replace(/"/g, '');
+          }
+        }
+        
+        // fmt.Println with variables: fmt.Println(variable)
+        const printVarMatch = line.match(/fmt\.Println\((\w+)\)/);
+        if (printVarMatch && !line.includes('"')) {
+          const varName = printVarMatch[1];
+          output += (variables[varName] || varName) + '\n';
+          continue;
+        }
+        
+        // Simple fmt.Println: fmt.Println("text")
+        const printMatch = line.match(/fmt\.Println\(["'`]([^"'`]+)["'`]\)/);
+        if (printMatch) {
+          output += printMatch[1] + '\n';
+        }
       }
       
-      // Check for basic syntax errors
       if (!code.includes('package main')) {
         return 'Error: Go programs must start with "package main"';
       }
@@ -193,18 +212,40 @@ const CodeEditor = ({ darkMode }) => {
 
   const executeRust = async () => {
     try {
-      // Extract println! macro calls
-      const printMatches = code.match(/println!\(["']([^"']+)["']\)/g);
       let output = '';
       
-      if (printMatches) {
-        printMatches.forEach(match => {
-          const text = match.match(/["']([^"']+)["']/)[1];
-          output += text + '\n';
-        });
+      // Enhanced println! parsing with variables and expressions
+      const lines = code.split('\n');
+      const variables = {};
+      
+      for (const line of lines) {
+        // Variable declarations: let x = value;
+        const varMatch = line.match(/let\s+(\w+)\s*=\s*([^;]+);/);
+        if (varMatch) {
+          const [, varName, value] = varMatch;
+          try {
+            variables[varName] = eval(value.replace(/"/g, '"'));
+          } catch {
+            variables[varName] = value.replace(/"/g, '');
+          }
+        }
+        
+        // println! with variables: println!("{}", variable);
+        const printVarMatch = line.match(/println!\("([^"]*)",\s*(\w+)\)/);
+        if (printVarMatch) {
+          const [, format, varName] = printVarMatch;
+          const value = variables[varName] || varName;
+          output += format.replace('{}', value) + '\n';
+          continue;
+        }
+        
+        // Simple println!: println!("text");
+        const printMatch = line.match(/println!\(["']([^"']+)["']\)/);
+        if (printMatch) {
+          output += printMatch[1] + '\n';
+        }
       }
       
-      // Check for main function
       if (!code.includes('fn main()')) {
         return 'Error: Rust programs must have a "fn main()" function';
       }
@@ -217,15 +258,35 @@ const CodeEditor = ({ darkMode }) => {
 
   const executeSwift = async () => {
     try {
-      // Extract print() calls
-      const printMatches = code.match(/print\(["']([^"']+)["']\)/g);
       let output = '';
+      const lines = code.split('\n');
+      const variables = {};
       
-      if (printMatches) {
-        printMatches.forEach(match => {
-          const text = match.match(/["']([^"']+)["']/)[1];
-          output += text + '\n';
-        });
+      for (const line of lines) {
+        // Variable declarations: let/var name = value
+        const varMatch = line.match(/(let|var)\s+(\w+)\s*=\s*([^\n]+)/);
+        if (varMatch) {
+          const [, , varName, value] = varMatch;
+          try {
+            variables[varName] = eval(value.replace(/"/g, '"'));
+          } catch {
+            variables[varName] = value.replace(/"/g, '');
+          }
+        }
+        
+        // print with variables: print(variable)
+        const printVarMatch = line.match(/print\((\w+)\)/);
+        if (printVarMatch && !line.includes('"')) {
+          const varName = printVarMatch[1];
+          output += (variables[varName] || varName) + '\n';
+          continue;
+        }
+        
+        // Simple print: print("text")
+        const printMatch = line.match(/print\(["']([^"']+)["']\)/);
+        if (printMatch) {
+          output += printMatch[1] + '\n';
+        }
       }
       
       return output || 'Program executed successfully (no output)';
@@ -236,15 +297,35 @@ const CodeEditor = ({ darkMode }) => {
 
   const executeRuby = async () => {
     try {
-      // Extract puts calls
-      const printMatches = code.match(/puts\s+["']([^"']+)["']/g);
       let output = '';
+      const lines = code.split('\n');
+      const variables = {};
       
-      if (printMatches) {
-        printMatches.forEach(match => {
-          const text = match.match(/["']([^"']+)["']/)[1];
-          output += text + '\n';
-        });
+      for (const line of lines) {
+        // Variable assignments: name = value
+        const varMatch = line.match(/(\w+)\s*=\s*([^\n]+)/);
+        if (varMatch && !line.includes('puts') && !line.includes('print')) {
+          const [, varName, value] = varMatch;
+          try {
+            variables[varName] = eval(value.replace(/"/g, '"'));
+          } catch {
+            variables[varName] = value.replace(/"/g, '');
+          }
+        }
+        
+        // puts with variables: puts variable
+        const putsVarMatch = line.match(/puts\s+(\w+)$/);
+        if (putsVarMatch) {
+          const varName = putsVarMatch[1];
+          output += (variables[varName] || varName) + '\n';
+          continue;
+        }
+        
+        // Simple puts: puts "text"
+        const putsMatch = line.match(/puts\s+["']([^"']+)["']/);
+        if (putsMatch) {
+          output += putsMatch[1] + '\n';
+        }
       }
       
       return output || 'Program executed successfully (no output)';
