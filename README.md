@@ -295,7 +295,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 👨‍💻 Author
 
-**Surya Ghosh** - [@ghoshsurya](https://github.com/ghoshsurya)
+**Suryakanta Ghosh** - [@ghoshsurya](https://github.com/ghoshsurya)
 
 ## 🙏 Acknowledgments
 
