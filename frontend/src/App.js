@@ -73,7 +73,6 @@ function App() {
                   <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
                   <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />
                 </Routes>
-                <AuthDebug />
               </>
             } />
           </Routes>
