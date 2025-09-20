@@ -1,11 +1,31 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate('/', { replace: true });
+    const handleAuthCallback = async () => {
+      try {
+        // Get the session from the URL
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Auth callback error:', error);
+        }
+        
+        // Always redirect to home after a short delay
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 1000);
+      } catch (error) {
+        console.error('Callback handling error:', error);
+        navigate('/', { replace: true });
+      }
+    };
+
+    handleAuthCallback();
   }, [navigate]);
 
   return (

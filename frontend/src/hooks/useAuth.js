@@ -26,13 +26,10 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.email);
+      
       if (session?.user) {
         await fetchUserProfile(session.user.id);
-        
-        // Redirect to home if on callback page
-        if (window.location.pathname.includes('/auth/callback')) {
-          window.location.href = '/';
-        }
       } else {
         setUser(null);
       }
@@ -95,7 +92,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}/`
         }
       });
       
