@@ -12,7 +12,7 @@
 We take security seriously. If you discover a security vulnerability:
 
 ### 📧 Contact
-- **Email**: ghoshsurya@gmail.com
+- **Email**: suryakanta9662@gmail.com
 - **Response Time**: Within 48 hours
 - **Updates**: Weekly until resolved
 
