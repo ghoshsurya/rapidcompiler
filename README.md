@@ -297,6 +297,27 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 **Suryakanta Ghosh** - [@ghoshsurya](https://github.com/ghoshsurya)
 
+## 💰 Support the Project
+
+**Codesplex is free and open source!** Support development:
+
+- ⭐ **Star** this repository
+- 💖 **Sponsor** on [GitHub Sponsors](https://github.com/sponsors/ghoshsurya)
+- ☁️ **Use** [Codesplex Cloud](https://codesplex.com) (coming soon)
+- 🐛 **Report** bugs and suggest features
+- 🤝 **Contribute** code and documentation
+
+## 🚀 Codesplex Cloud (SaaS)
+
+**Coming Soon**: Hosted version with premium features:
+- Real-time collaboration
+- Private projects
+- Advanced analytics
+- Priority support
+- Team workspaces
+
+[Join Waitlist](https://codesplex.com/waitlist) for early access!
+
 ## 🙏 Acknowledgments
 
 - **Monaco Editor** team for the excellent code editor
@@ -307,5 +328,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <div align="center">
-  <strong>⭐ Star this repository if you find it helpful!</strong>
+  <strong>⭐ Star this repository • 💖 Sponsor the project • ☁️ Try Codesplex Cloud</strong>
 </div>
