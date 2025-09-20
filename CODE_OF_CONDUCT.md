@@ -25,7 +25,7 @@ Project maintainers are responsible for clarifying standards and will take appro
 
 ## Contact
 
-Report issues to: [your-email@example.com]
+Report issues to: ghoshsurya@gmail.com
 
 ## Attribution
 

@@ -12,7 +12,7 @@
 We take security seriously. If you discover a security vulnerability:
 
 ### 📧 Contact
-- **Email**: [your-security-email@example.com]
+- **Email**: ghoshsurya@gmail.com
 - **Response Time**: Within 48 hours
 - **Updates**: Weekly until resolved
 
