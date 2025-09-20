@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import { Play, Save, Share, Terminal, FileText } from 'lucide-react';
+import { Play, Save, Share, Terminal, FileText, Download } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 
 const LANGUAGE_TEMPLATES = {
   python: `# Python Code
@@ -482,7 +483,35 @@ const CodeEditor = ({ darkMode }) => {
     }
   };
 
-
+  const downloadCode = () => {
+    const extensions = {
+      python: 'py',
+      javascript: 'js',
+      typescript: 'ts',
+      c: 'c',
+      cpp: 'cpp',
+      java: 'java',
+      csharp: 'cs',
+      go: 'go',
+      rust: 'rs',
+      swift: 'swift',
+      ruby: 'rb',
+      php: 'php',
+      sql: 'sql',
+      web: 'html'
+    };
+    
+    const extension = extensions[language] || 'txt';
+    const filename = `${projectTitle.replace(/[^a-z0-9]/gi, '_')}.${extension}`;
+    
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const runCode = async () => {
     setIsRunning(true);
@@ -570,16 +599,23 @@ const CodeEditor = ({ darkMode }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/projects', {
-        title: projectTitle,
-        language,
-        code
-      });
+      const { data, error } = await supabase
+        .from('projects')
+        .insert({
+          title: projectTitle,
+          language,
+          code,
+          user_id: user.id
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
       
       alert('Project saved successfully!');
       setShowSaveDialog(false);
     } catch (error) {
-      alert('Failed to save project');
+      alert('Failed to save project: ' + error.message);
     }
   };
 
@@ -591,22 +627,33 @@ const CodeEditor = ({ darkMode }) => {
 
     try {
       // First save the project
-      const saveResponse = await axios.post('http://localhost:5000/api/projects', {
-        title: projectTitle,
-        language,
-        code
-      });
+      const { data: project, error: saveError } = await supabase
+        .from('projects')
+        .insert({
+          title: projectTitle,
+          language,
+          code,
+          user_id: user.id
+        })
+        .select()
+        .single();
+      
+      if (saveError) throw saveError;
 
-      // Then share it
-      const shareResponse = await axios.post(
-        `http://localhost:5000/api/projects/${saveResponse.data.id}/share`
-      );
+      // Generate share ID and update project
+      const shareId = Math.random().toString(36).substring(2, 15);
+      const { error: updateError } = await supabase
+        .from('projects')
+        .update({ share_id: shareId, is_public: true })
+        .eq('id', project.id);
+      
+      if (updateError) throw updateError;
 
-      const shareUrl = `${window.location.origin}${shareResponse.data.share_url}`;
-      navigator.clipboard.writeText(shareUrl);
-      alert('Share link copied to clipboard!');
+      const shareUrl = `${window.location.origin}/share/${shareId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Share link copied to clipboard!\n' + shareUrl);
     } catch (error) {
-      alert('Failed to share project');
+      alert('Failed to share project: ' + error.message);
     }
   };
 
@@ -671,6 +718,16 @@ const CodeEditor = ({ darkMode }) => {
             >
               <Share className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Share</span>
+            </button>
+
+            <button
+              onClick={downloadCode}
+              className={`flex items-center space-x-1 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base rounded-lg ${
+                darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+              }`}
+            >
+              <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Download</span>
             </button>
           </div>
         </div>
