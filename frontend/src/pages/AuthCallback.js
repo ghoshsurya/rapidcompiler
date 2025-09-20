@@ -1,1 +1,21 @@
-import { useEffect } from 'react';\nimport { useNavigate } from 'react-router-dom';\n\nconst AuthCallback = () => {\n  const navigate = useNavigate();\n\n  useEffect(() => {\n    // Redirect to home page after successful authentication\n    navigate('/', { replace: true });\n  }, [navigate]);\n\n  return (\n    <div className=\"min-h-screen flex items-center justify-center\">\n      <div className=\"text-center\">\n        <div className=\"animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto\"></div>\n        <p className=\"mt-4 text-gray-600\">Completing sign in...</p>\n      </div>\n    </div>\n  );\n};\n\nexport default AuthCallback;
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const AuthCallback = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate('/', { replace: true });
+  }, [navigate]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Completing sign in...</p>
+      </div>
+    </div>
+  );
+};
+
+export default AuthCallback;
