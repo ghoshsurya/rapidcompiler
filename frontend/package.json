@@ -1,7 +1,25 @@
 {
-  "name": "onlinegdb-frontend",
+  "name": "codesplex",
   "version": "1.0.0",
-  "private": true,
+  "description": "Professional online code editor and compiler with multi-language support",
+  "author": "Suryakanta Ghosh <ghoshsurya@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ghoshsurya/codesplex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ghoshsurya/codesplex/issues"
+  },
+  "homepage": "https://codesplex.netlify.app",
+  "keywords": [
+    "code-editor",
+    "compiler",
+    "online-ide",
+    "multi-language",
+    "react",
+    "monaco-editor"
+  ],
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
     "react": "^18.2.0",
