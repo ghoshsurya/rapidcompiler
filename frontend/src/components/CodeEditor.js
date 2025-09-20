@@ -126,7 +126,7 @@ const CodeEditor = ({ darkMode }) => {
   const debouncedCodeChange = useMemo(
     () => debounce((newCode) => {
       setCode(newCode);
-    }, 300),
+    }, 100),
     []
   );
 
@@ -760,7 +760,7 @@ const CodeEditor = ({ darkMode }) => {
                        language === 'typescript' ? 'typescript' :
                        language === 'swift' ? 'swift' : language}
               value={code}
-              onChange={debouncedCodeChange}
+              onChange={(value) => setCode(value || '')}
               theme={darkMode ? 'vs-dark' : 'light'}
               options={{
                 minimap: { enabled: false },

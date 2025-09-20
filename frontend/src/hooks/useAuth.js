@@ -83,9 +83,22 @@ export const AuthProvider = ({ children }) => {
             is_admin: false
           };
           
-          // Insert user profile
-          await supabase.from('users').insert(newUser);
-          setUser(newUser);
+          // Insert user profile with upsert to avoid conflicts
+          const { error: insertError } = await supabase
+            .from('users')
+            .upsert(newUser, { onConflict: 'id' });
+          
+          if (!insertError) {
+            setUser(newUser);
+          } else {
+            console.error('Error creating user profile:', insertError);
+            // Still set user with auth data
+            setUser({
+              id: authUser.user.id,
+              email: authUser.user.email,
+              username: authUser.user.email.split('@')[0]
+            });
+          }
         }
       }
     } catch (error) {
