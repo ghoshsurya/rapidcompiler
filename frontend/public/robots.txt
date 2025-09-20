@@ -1,5 +1,14 @@
 User-agent: *
 Allow: /
-Disallow: /api/
 
-Sitemap: https://codesplex.com/sitemap.xml
+# Sitemap
+Sitemap: https://codesplex.netlify.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Disallow admin pages
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /reset-password
+Disallow: /simple-reset

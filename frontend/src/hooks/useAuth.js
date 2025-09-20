@@ -16,27 +16,47 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
+    let mounted = true;
+    
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+          if (mounted) setLoading(false);
+          return;
+        }
+        
+        if (session?.user && mounted) {
+          await fetchUserProfile(session.user.id);
+        }
+        
+        if (mounted) setLoading(false);
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        if (mounted) setLoading(false);
       }
-      setLoading(false);
-    });
+    };
 
-    // Listen for auth changes
+    initializeAuth();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.email);
+      if (!mounted) return;
       
-      if (session?.user) {
+      if (event === 'SIGNED_IN' && session?.user) {
         await fetchUserProfile(session.user.id);
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }
+      
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchUserProfile = async (userId) => {
@@ -90,10 +110,7 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`
-        }
+        provider: 'google'
       });
       
       if (error) throw error;

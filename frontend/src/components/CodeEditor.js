@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Save, Share, Terminal, FileText, Download } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { debounce } from '../utils/performance';
 
 const LANGUAGE_TEMPLATES = {
   python: `# Python Code
@@ -115,12 +116,19 @@ const CodeEditor = ({ darkMode }) => {
   const [webPreview, setWebPreview] = useState('');
   const editorRef = useRef(null);
 
-  const handleLanguageChange = (newLanguage) => {
+  const handleLanguageChange = useCallback((newLanguage) => {
     setLanguage(newLanguage);
     setCode(LANGUAGE_TEMPLATES[newLanguage]);
     setOutput('');
     setWebPreview('');
-  };
+  }, []);
+
+  const debouncedCodeChange = useMemo(
+    () => debounce((newCode) => {
+      setCode(newCode);
+    }, 300),
+    []
+  );
 
   const executeTypeScript = async () => {
     try {
@@ -752,7 +760,7 @@ const CodeEditor = ({ darkMode }) => {
                        language === 'typescript' ? 'typescript' :
                        language === 'swift' ? 'swift' : language}
               value={code}
-              onChange={setCode}
+              onChange={debouncedCodeChange}
               theme={darkMode ? 'vs-dark' : 'light'}
               options={{
                 minimap: { enabled: false },

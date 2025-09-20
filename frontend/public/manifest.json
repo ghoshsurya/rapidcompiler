@@ -1,0 +1,27 @@
+{
+  "short_name": "Codesplex",
+  "name": "Codesplex - Online Code Editor & Compiler",
+  "description": "Professional online code editor and compiler with 14+ programming languages, real-time execution, and project sharing.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2563eb",
+  "background_color": "#ffffff",
+  "categories": ["developer", "productivity", "education"]
+}
