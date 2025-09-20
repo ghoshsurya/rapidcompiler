@@ -28,6 +28,11 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         await fetchUserProfile(session.user.id);
+        
+        // Redirect to home if on callback page
+        if (window.location.pathname.includes('/auth/callback')) {
+          window.location.href = '/';
+        }
       } else {
         setUser(null);
       }
@@ -48,19 +53,22 @@ export const AuthProvider = ({ children }) => {
       if (!error && data) {
         setUser(data);
       } else {
-        console.log('Profile not found, user might need to complete registration');
-        // If profile doesn't exist, user is still authenticated but profile is missing
+        // Create profile for Google OAuth users
         const { data: authUser } = await supabase.auth.getUser();
         if (authUser.user) {
-          setUser({
+          const newUser = {
             id: authUser.user.id,
             email: authUser.user.email,
             username: authUser.user.email.split('@')[0],
-            full_name: '',
-            avatar_url: null,
-            is_admin: false,
-            created_at: authUser.user.created_at
-          });
+            full_name: authUser.user.user_metadata?.full_name || authUser.user.user_metadata?.name || '',
+            avatar_url: authUser.user.user_metadata?.avatar_url || null,
+            provider: 'google',
+            is_admin: false
+          };
+          
+          // Insert user profile
+          await supabase.from('users').insert(newUser);
+          setUser(newUser);
         }
       }
     } catch (error) {
@@ -87,7 +95,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: window.location.origin
         }
       });
       
