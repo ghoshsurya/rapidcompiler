@@ -82,6 +82,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
   const register = async (username, email, password, fullName = '') => {
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -298,6 +314,7 @@ export const AuthProvider = ({ children }) => {
     adminLogin,
     resetPassword,
     updatePasswordWithToken,
+    signInWithGoogle,
     getAllUsers,
     deleteUser
   };
