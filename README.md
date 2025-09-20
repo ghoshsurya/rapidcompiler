@@ -39,6 +39,12 @@ A production-ready, enterprise-grade online code editor and compiler platform wi
 - **Project sharing** with unique URLs
 - **Real-time collaboration** ready
 
+### 📦 **NPM Package Available**
+- **React Component**: `npm install https://github.com/ghoshsurya/codesplex/raw/main/ghoshsurya-codesplex-react-1.0.0.tgz`
+- **Easy Integration**: Drop-in Monaco Editor component
+- **TypeScript Support**: Full type definitions included
+- **GitHub Releases**: Available at [releases page](https://github.com/ghoshsurya/codesplex/releases)
+
 ### 🌐 **Production Features**
 - **SEO optimized** with meta tags and structured data
 - **PWA ready** with offline capabilities
