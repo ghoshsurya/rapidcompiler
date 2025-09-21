@@ -1,5 +1,5 @@
 {
-  "name": "codesplex",
+  "name": "rapidcompiler",
   "version": "1.0.0",
   "description": "Online Code Editor & Compiler Platform",
   "scripts": {
@@ -8,6 +8,6 @@
     "deploy": "netlify deploy --prod"
   },
   "keywords": ["code-editor", "compiler", "online-ide"],
-  "author": "Codesplex",
+  "author": "RapidCompiler",
   "license": "MIT"
 }

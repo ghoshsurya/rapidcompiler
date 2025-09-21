@@ -31,25 +31,7 @@ function App() {
     }
   }, [darkMode]);
 
-  // Handle password reset on page load
-  useEffect(() => {
-    const checkForReset = () => {
-      const hash = window.location.hash;
-      console.log('Current hash:', hash);
-      
-      if (hash.includes('access_token') && hash.includes('type=recovery')) {
-        console.log('Detected password reset, redirecting...');
-        // Use replace to avoid back button issues
-        window.location.replace('/reset-password' + hash);
-      }
-    };
-    
-    checkForReset();
-    
-    // Also listen for hash changes
-    window.addEventListener('hashchange', checkForReset);
-    return () => window.removeEventListener('hashchange', checkForReset);
-  }, []);
+
 
   return (
     <AuthProvider>

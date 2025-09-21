@@ -1,7 +1,7 @@
-# 🚀 Codesplex - Professional Online Code Editor & Compiler
+# 🚀 RapidCompiler - Professional Online Code Editor & Compiler
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://codesplex.netlify.app)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/ghoshsurya/codesplex)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen)](https://rapidcompiler.netlify.app)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/ghoshsurya/rapidcompiler)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A production-ready, enterprise-grade online code editor and compiler platform with advanced features, security, and multi-language support. Built with modern technologies and optimized for performance.
@@ -40,10 +40,10 @@ A production-ready, enterprise-grade online code editor and compiler platform wi
 - **Real-time collaboration** ready
 
 ### 📦 **NPM Package Available**
-- **React Component**: `npm install https://github.com/ghoshsurya/codesplex/raw/main/ghoshsurya-codesplex-react-1.0.0.tgz`
+- **React Component**: `npm install https://github.com/ghoshsurya/rapidcompiler/raw/main/ghoshsurya-rapidcompiler-react-1.0.0.tgz`
 - **Easy Integration**: Drop-in Monaco Editor component
 - **TypeScript Support**: Full type definitions included
-- **GitHub Releases**: Available at [releases page](https://github.com/ghoshsurya/codesplex/releases)
+- **GitHub Releases**: Available at [releases page](https://github.com/ghoshsurya/rapidcompiler/releases)
 
 ### 🌐 **Production Features**
 - **SEO optimized** with meta tags and structured data
@@ -96,8 +96,8 @@ Docker + Docker Compose
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/ghoshsurya/codesplex.git
-cd codesplex
+git clone https://github.com/ghoshsurya/rapidcompiler.git
+cd rapidcompiler
 ```
 
 ### 2. Environment Setup
@@ -139,7 +139,7 @@ npm start
 ## 📁 Project Structure
 
 ```
-codesplex/
+rapidcompiler/
 ├── 📁 frontend/                 # React application
 │   ├── 📁 public/              # Static assets
 │   ├── 📁 src/
@@ -299,21 +299,21 @@ python test-compilers.py
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Author
+## 👨💻 Author
 
 **Suryakanta Ghosh** - [@ghoshsurya](https://github.com/ghoshsurya)
 
 ## 💰 Support the Project
 
-**Codesplex is free and open source!** Support development:
+**RapidCompiler is free and open source!** Support development:
 
 - ⭐ **Star** this repository
 - 💖 **Sponsor** on [GitHub Sponsors](https://github.com/sponsors/ghoshsurya)
-- ☁️ **Use** [Codesplex Cloud](https://codesplex.com) (coming soon)
+- ☁️ **Use** [RapidCompiler Cloud](https://rapidcompiler.com) (coming soon)
 - 🐛 **Report** bugs and suggest features
 - 🤝 **Contribute** code and documentation
 
-## 🚀 Codesplex Cloud (SaaS)
+## 🚀 RapidCompiler Cloud (SaaS)
 
 **Coming Soon**: Hosted version with premium features:
 - Real-time collaboration
@@ -322,7 +322,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - Priority support
 - Team workspaces
 
-[Join Waitlist](https://codesplex.com/waitlist) for early access!
+[Join Waitlist](https://rapidcompiler.com/waitlist) for early access!
 
 ## 🙏 Acknowledgments
 
@@ -334,5 +334,5 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <div align="center">
-  <strong>⭐ Star this repository • 💖 Sponsor the project • ☁️ Try Codesplex Cloud</strong>
+  <strong>⭐ Star this repository • 💖 Sponsor the project • ☁️ Try RapidCompiler Cloud</strong>
 </div>

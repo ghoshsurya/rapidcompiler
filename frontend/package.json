@@ -1,17 +1,17 @@
 {
-  "name": "codesplex",
+  "name": "rapidcompiler",
   "version": "1.0.0",
   "description": "Professional online code editor and compiler with multi-language support",
   "author": "Suryakanta Ghosh <suryakanta9662@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ghoshsurya/codesplex.git"
+    "url": "https://github.com/ghoshsurya/rapidcompiler.git"
   },
   "bugs": {
-    "url": "https://github.com/ghoshsurya/codesplex/issues"
+    "url": "https://github.com/ghoshsurya/rapidcompiler/issues"
   },
-  "homepage": "https://codesplex.netlify.app",
+  "homepage": "https://rapidcompiler.netlify.app",
   "keywords": [
     "code-editor",
     "compiler",
@@ -22,15 +22,15 @@
   ],
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
+    "@supabase/supabase-js": "^2.57.4",
+    "autoprefixer": "^10.4.15",
+    "axios": "^1.5.0",
+    "lucide-react": "^0.279.0",
+    "postcss": "^8.4.29",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0",
-    "axios": "^1.5.0",
-    "tailwindcss": "^3.3.3",
-    "autoprefixer": "^10.4.15",
-    "postcss": "^8.4.29",
-    "lucide-react": "^0.279.0",
-    "@supabase/supabase-js": "^2.38.0"
+    "tailwindcss": "^3.3.3"
   },
   "scripts": {
     "start": "react-scripts start",

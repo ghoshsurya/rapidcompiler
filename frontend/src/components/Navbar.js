@@ -17,7 +17,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
       <div className="w-full flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
           <Code className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-          <span className="text-lg sm:text-xl font-bold">Codesplex</span>
+          <span className="text-lg sm:text-xl font-bold">RapidCompiler</span>
         </Link>
 
         <div className="flex items-center space-x-1 sm:space-x-4">
