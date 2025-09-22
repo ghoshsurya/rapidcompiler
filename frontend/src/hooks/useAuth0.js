@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   const fetchUserProfile = async (auth0User) => {
     try {
       console.log('Fetching user profile for:', auth0User.sub);
-      const response = await api.get(`/users/${auth0User.sub}`);
+      const response = await api.get(`/users/${encodeURIComponent(auth0User.sub)}`);
       console.log('User profile found:', response.data);
       setUser(response.data);
     } catch (error) {
