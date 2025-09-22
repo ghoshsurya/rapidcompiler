@@ -108,7 +108,8 @@ const Projects = () => {
                 {formatDate(project.created_at)}
               </div>
 
-              <div className="flex items-center space-x-2">
+              {/* Desktop Actions */}
+              <div className="hidden sm:flex items-center space-x-2">
                 <Link
                   to={`/?project=${project.id}`}
                   className="flex-1 px-3 py-2 text-center bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -129,6 +130,32 @@ const Projects = () => {
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
+              </div>
+
+              {/* Mobile Actions */}
+              <div className="sm:hidden space-y-2">
+                <Link
+                  to={`/?project=${project.id}`}
+                  className="block w-full px-3 py-2 text-center bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Open
+                </Link>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => shareProject(project)}
+                    className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    <Share className="h-4 w-4" />
+                    <span>Share</span>
+                  </button>
+                  <button
+                    onClick={() => deleteProject(project.id)}
+                    className="flex-1 flex items-center justify-center space-x-2 px-3 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
             </div>
           ))}
