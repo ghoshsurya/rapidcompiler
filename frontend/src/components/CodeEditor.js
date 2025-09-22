@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Play, Save, Share, Terminal, FileText, Download } from 'lucide-react';
-import { api } from '../lib/supabase';
+import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import { debounce } from '../utils/performance';
 

@@ -10,7 +10,7 @@ export const auth0Config = {
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || '/.netlify/functions/neon-api'
+  baseURL: '/.netlify/functions/neon-api'
 });
 
 api.interceptors.request.use((config) => {

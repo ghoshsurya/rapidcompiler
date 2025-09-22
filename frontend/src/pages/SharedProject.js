@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Play, Copy } from 'lucide-react';
-import { api } from '../lib/supabase';
+import { api } from '../lib/api';
 
 const SharedProject = ({ darkMode }) => {
   const { shareId } = useParams();

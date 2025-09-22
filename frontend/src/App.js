@@ -15,7 +15,7 @@ import Navbar from './components/Navbar';
 import AuthDebug from './components/AuthDebug';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { AuthProvider, useAuth } from './hooks/useAuth';
-import { auth0Config } from './lib/supabase';
+import { auth0Config } from './lib/api';
 import './index.css';
 
 function App() {

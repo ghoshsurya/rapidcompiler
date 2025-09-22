@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { api } from '../lib/supabase';
+import { api } from '../lib/api';
 
 const AuthContext = createContext();
 

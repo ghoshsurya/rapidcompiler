@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Calendar, Share, Trash2 } from 'lucide-react';
-import { api } from '../lib/supabase';
+import { api } from '../lib/api';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);

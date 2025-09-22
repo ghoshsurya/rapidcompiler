@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { api } from '../lib/supabase';
+import { api } from '../lib/api';
 import { User, Mail, Lock, Camera, Download, Code, Calendar, Trash2, AlertTriangle, Share } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
