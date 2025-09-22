@@ -180,7 +180,7 @@ exports.handler = async (event, context) => {
           projectData.title,
           projectData.language,
           projectData.code,
-          false,
+          true,
           new Date(),
           new Date()
         ]);
@@ -194,6 +194,37 @@ exports.handler = async (event, context) => {
             title: project.title,
             language: project.language,
             share_id: project.share_id
+          })
+        };
+      }
+
+      if (path.startsWith('/share/') && method === 'GET') {
+        const shareId = path.split('/')[2];
+        
+        const result = await dbClient.query(
+          'SELECT * FROM projects WHERE share_id = $1 AND is_public = true',
+          [shareId]
+        );
+
+        const project = result.rows[0];
+        if (!project) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'Project not found' })
+          };
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            id: project.id,
+            title: project.title,
+            language: project.language,
+            code: project.code,
+            share_id: project.share_id,
+            created_at: project.created_at
           })
         };
       }
