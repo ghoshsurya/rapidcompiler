@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import CodeEditor from './components/CodeEditor';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Auth from './pages/Auth';
 import Projects from './pages/Projects';
 import SharedProject from './pages/SharedProject';
 import AdminLogin from './pages/AdminLogin';
@@ -61,8 +60,8 @@ function App() {
                 <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
                 <Routes>
                   <Route path="/" element={<CodeEditor darkMode={darkMode} />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
+                  <Route path="/login" element={<Auth darkMode={darkMode} />} />
+                  <Route path="/register" element={<Auth darkMode={darkMode} />} />
                   <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
                   <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />
