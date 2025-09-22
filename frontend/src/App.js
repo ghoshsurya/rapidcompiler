@@ -14,7 +14,9 @@ import AdminDashboard from './components/AdminDashboard';
 import UserProfile from './components/UserProfile';
 import Navbar from './components/Navbar';
 import AuthDebug from './components/AuthDebug';
+import { Auth0Provider } from '@auth0/auth0-react';
 import { AuthProvider, useAuth } from './hooks/useAuth';
+import { auth0Config } from './lib/supabase';
 import './index.css';
 
 function App() {
@@ -34,8 +36,16 @@ function App() {
 
 
   return (
-    <AuthProvider>
-      <Router>
+    <Auth0Provider
+      domain={auth0Config.domain}
+      clientId={auth0Config.clientId}
+      authorizationParams={{
+        redirect_uri: auth0Config.redirectUri,
+        audience: auth0Config.audience
+      }}
+    >
+      <AuthProvider>
+        <Router>
         <div className={`min-h-screen ${darkMode ? 'dark bg-dark-bg text-dark-text' : 'bg-gray-50'}`}>
           <Routes>
             {/* Admin routes without navbar */}
@@ -61,8 +71,9 @@ function App() {
             } />
           </Routes>
         </div>
-      </Router>
-    </AuthProvider>
+        </Router>
+      </AuthProvider>
+    </Auth0Provider>
   );
 }
 

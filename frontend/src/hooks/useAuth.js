@@ -1,3 +1,6 @@
+export { useAuth, AuthProvider } from './useAuth0';
+
+/* ORIGINAL SUPABASE CODE - BACKUP
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -360,3 +363,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+*/

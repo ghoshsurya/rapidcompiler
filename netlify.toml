@@ -4,10 +4,17 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Add these environment variables in Netlify dashboard:
+  # REACT_APP_AUTH0_DOMAIN
+  # REACT_APP_AUTH0_CLIENT_ID
+  # REACT_APP_AUTH0_AUDIENCE
+  # DATABASE_URL (Neon connection string)
+  # AUTH0_DOMAIN
+  # AUTH0_AUDIENCE
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  to = "/.netlify/functions/neon-api/:splat"
   status = 200
 
 [[redirects]]
