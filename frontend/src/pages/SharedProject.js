@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Play, Copy } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../lib/supabase';
 
 const SharedProject = ({ darkMode }) => {
   const { shareId } = useParams();
@@ -19,8 +19,13 @@ const SharedProject = ({ darkMode }) => {
 
   const fetchSharedProject = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/share/${shareId}`);
-      setProject(response.data);
+      const response = await fetch(`/.netlify/functions/neon-api/share/${shareId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setProject(data);
+      } else {
+        setError('Project not found or not publicly shared');
+      }
     } catch (error) {
       setError('Project not found or not publicly shared');
     } finally {
@@ -35,19 +40,24 @@ const SharedProject = ({ darkMode }) => {
     setOutput('Running...');
     
     try {
-      const response = await axios.post('http://localhost:5000/api/run', {
-        language: project.language,
-        code: project.code,
-        input
+      const response = await fetch('/.netlify/functions/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          language: project.language,
+          code: project.code,
+          input
+        })
       });
+      const data = await response.json();
       
-      if (response.data.error) {
-        setOutput(`Error: ${response.data.error}`);
+      if (data.error) {
+        setOutput(`Error: ${data.error}`);
       } else {
-        setOutput(response.data.output || 'Program executed successfully (no output)');
+        setOutput(data.output || 'Program executed successfully (no output)');
       }
     } catch (error) {
-      setOutput(`Error: ${error.response?.data?.error || 'Failed to execute code'}`);
+      setOutput(`Error: ${error.message || 'Failed to execute code'}`);
     } finally {
       setIsRunning(false);
     }
