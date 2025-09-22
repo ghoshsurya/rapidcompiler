@@ -1,8 +1,34 @@
-import { supabase } from '../lib/supabase';
+// SUPABASE TEST UTILITIES - COMMENTED OUT
+// import { supabase } from '../lib/supabase';
+
+export const testApiConnection = async () => {
+  try {
+    const response = await fetch('/.netlify/functions/neon-api/health');
+    const data = await response.json();
+    console.log('API connection successful:', data);
+    return true;
+  } catch (error) {
+    console.error('API test failed:', error);
+    return false;
+  }
+};
+
+export const testAuth = async () => {
+  try {
+    const token = localStorage.getItem('auth0_token');
+    console.log('Auth0 token present:', !!token);
+    return !!token;
+  } catch (error) {
+    console.error('Auth test failed:', error);
+    return false;
+  }
+};
+
+/* ORIGINAL SUPABASE CODE - BACKUP
+// import { supabase } from '../lib/supabase';
 
 export const testSupabaseConnection = async () => {
   try {
-    // Test basic connection
     const { data, error } = await supabase.from('users').select('count').limit(1);
     
     if (error) {
@@ -18,7 +44,7 @@ export const testSupabaseConnection = async () => {
   }
 };
 
-export const testAuth = async () => {
+export const testAuthOriginal = async () => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     console.log('Current session:', session);
@@ -32,3 +58,4 @@ export const testAuth = async () => {
     return null;
   }
 };
+*/

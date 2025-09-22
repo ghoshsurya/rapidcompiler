@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../lib/supabase';
+// import { supabase } from '../lib/supabase'; // COMMENTED OUT - MIGRATED TO AUTH0
 import { User, Mail, Lock, Camera, Download, Code, Calendar } from 'lucide-react';
 
 const UserProfile = ({ darkMode }) => {

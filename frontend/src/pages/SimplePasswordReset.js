@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, AlertCircle, CheckCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+// import { supabase } from '../lib/supabase'; // COMMENTED OUT - MIGRATED TO AUTH0
 
 const SimplePasswordReset = () => {
   const [email, setEmail] = useState('');

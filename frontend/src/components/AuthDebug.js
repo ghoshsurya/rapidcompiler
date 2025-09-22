@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../lib/supabase';
-import { testSupabaseConnection, testAuth } from '../utils/testSupabase';
+// import { supabase } from '../lib/supabase'; // COMMENTED OUT - MIGRATED TO AUTH0
+import { testApiConnection, testAuth } from '../utils/testSupabase';
 
 const AuthDebug = () => {
   const { user, loading } = useAuth();
@@ -10,7 +10,7 @@ const AuthDebug = () => {
 
   useEffect(() => {
     const runTests = async () => {
-      const connectionOk = await testSupabaseConnection();
+      const connectionOk = await testApiConnection();
       setSupabaseStatus(connectionOk ? 'Connected' : 'Failed');
       
       const authData = await testAuth();

@@ -3,7 +3,7 @@ import Editor from '@monaco-editor/react';
 import { Play, Save, Share, Terminal, FileText, Download } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../lib/supabase';
+// import { supabase } from '../lib/supabase'; // COMMENTED OUT - MIGRATED TO AUTH0
 import { debounce } from '../utils/performance';
 
 const LANGUAGE_TEMPLATES = {

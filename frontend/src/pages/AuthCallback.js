@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+// import { supabase } from '../lib/supabase'; // COMMENTED OUT - MIGRATED TO AUTH0
 
 const AuthCallback = () => {
   const navigate = useNavigate();
