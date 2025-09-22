@@ -19,14 +19,19 @@ const SharedProject = ({ darkMode }) => {
 
   const fetchSharedProject = async () => {
     try {
+      console.log('Fetching shared project:', shareId);
       const response = await fetch(`/.netlify/functions/neon-api/share/${shareId}`);
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
+      
       if (response.ok) {
         setProject(data);
       } else {
         setError('Project not found or not publicly shared');
       }
     } catch (error) {
+      console.error('Fetch error:', error);
       setError('Project not found or not publicly shared');
     } finally {
       setLoading(false);

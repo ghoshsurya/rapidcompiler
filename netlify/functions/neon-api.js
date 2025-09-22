@@ -58,7 +58,7 @@ exports.handler = async (event, context) => {
 
   try {
     // Verify Auth0 token for protected routes
-    if (path !== '/health' && path !== '/run') {
+    if (path !== '/health' && path !== '/run' && !path.startsWith('/share/')) {
       const authHeader = event.headers.authorization;
       if (!authHeader) {
         return {
@@ -261,14 +261,17 @@ exports.handler = async (event, context) => {
         };
       }
 
+      // Public share endpoint - no auth required
       if (path.startsWith('/share/') && method === 'GET') {
         const shareId = path.split('/')[2];
+        console.log('Looking for share_id:', shareId);
         
         const result = await dbClient.query(
           'SELECT * FROM projects WHERE share_id = $1 AND is_public = true',
           [shareId]
         );
 
+        console.log('Query result:', result.rows.length, 'projects found');
         const project = result.rows[0];
         if (!project) {
           return {
