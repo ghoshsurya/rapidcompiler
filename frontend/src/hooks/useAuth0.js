@@ -76,6 +76,17 @@ export const AuthProvider = ({ children }) => {
         }
       } else {
         console.error('Error fetching profile:', error);
+        // Fallback: use Auth0 user data directly
+        const fallbackUser = {
+          id: auth0User.sub,
+          email: auth0User.email,
+          username: auth0User.nickname || auth0User.email.split('@')[0],
+          full_name: auth0User.name || '',
+          avatar_url: auth0User.picture || null,
+          is_admin: false
+        };
+        console.log('Using fallback user data:', fallbackUser);
+        setUser(fallbackUser);
       }
     }
   };
