@@ -607,15 +607,17 @@ const CodeEditor = ({ darkMode }) => {
     }
 
     try {
+      console.log('Saving project:', { title: projectTitle, language, code: code.substring(0, 100) + '...' });
       const response = await api.post('/projects', {
         title: projectTitle,
-        language,
-        code
+        language: language,
+        code: code
       });
       
       alert('Project saved successfully!');
       setShowSaveDialog(false);
     } catch (error) {
+      console.error('Save error:', error);
       alert('Failed to save project: ' + error.message);
     }
   };
@@ -627,17 +629,19 @@ const CodeEditor = ({ darkMode }) => {
     }
 
     try {
+      console.log('Sharing project:', { title: projectTitle, language, code: code.substring(0, 100) + '...' });
       // Save the project and get share_id
       const response = await api.post('/projects', {
         title: projectTitle,
-        language,
-        code
+        language: language,
+        code: code
       });
       
       const shareUrl = `${window.location.origin}/share/${response.data.share_id}`;
       await navigator.clipboard.writeText(shareUrl);
       alert('Share link copied to clipboard!\n' + shareUrl);
     } catch (error) {
+      console.error('Share error:', error);
       alert('Failed to share project: ' + error.message);
     }
   };
