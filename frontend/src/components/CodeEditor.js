@@ -116,6 +116,7 @@ const CodeEditor = ({ darkMode }) => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [webPreview, setWebPreview] = useState('');
   const [loading, setLoading] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState(null);
   const editorRef = useRef(null);
 
   // Load project if project ID is in URL
@@ -132,6 +133,7 @@ const CodeEditor = ({ darkMode }) => {
       const response = await api.get(`/projects/${projectId}`);
       const project = response.data;
       
+      setCurrentProjectId(projectId);
       setProjectTitle(project.title);
       setLanguage(project.language);
       setCode(project.code);
@@ -150,6 +152,7 @@ const CodeEditor = ({ darkMode }) => {
     setCode(LANGUAGE_TEMPLATES[newLanguage]);
     setOutput('');
     setWebPreview('');
+    setCurrentProjectId(null); // Reset project ID when changing language
   }, []);
 
   const debouncedCodeChange = useMemo(
@@ -637,14 +640,27 @@ const CodeEditor = ({ darkMode }) => {
     }
 
     try {
-      console.log('Saving project:', { title: projectTitle, language, code: code.substring(0, 100) + '...' });
-      const response = await api.post('/projects', {
-        title: projectTitle,
-        language: language,
-        code: code
-      });
+      console.log('Saving project:', { id: currentProjectId, title: projectTitle, language, code: code.substring(0, 100) + '...' });
       
-      alert('Project saved successfully!');
+      if (currentProjectId) {
+        // Update existing project
+        await api.put(`/projects/${currentProjectId}`, {
+          title: projectTitle,
+          language: language,
+          code: code
+        });
+        alert('Project updated successfully!');
+      } else {
+        // Create new project
+        const response = await api.post('/projects', {
+          title: projectTitle,
+          language: language,
+          code: code
+        });
+        setCurrentProjectId(response.data.id);
+        alert('Project saved successfully!');
+      }
+      
       setShowSaveDialog(false);
     } catch (error) {
       console.error('Save error:', error);

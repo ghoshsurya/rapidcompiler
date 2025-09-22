@@ -222,6 +222,45 @@ exports.handler = async (event, context) => {
         };
       }
 
+      if (path.startsWith('/projects/') && method === 'PUT') {
+        const projectId = path.split('/')[2];
+        const projectData = JSON.parse(event.body);
+        
+        const result = await dbClient.query(`
+          UPDATE projects 
+          SET title = $1, language = $2, code = $3, updated_at = $4
+          WHERE id = $5 AND user_id = $6
+          RETURNING *
+        `, [
+          projectData.title,
+          projectData.language,
+          projectData.code,
+          new Date(),
+          projectId,
+          event.user.sub
+        ]);
+
+        const project = result.rows[0];
+        if (!project) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'Project not found' })
+          };
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            id: project.id,
+            title: project.title,
+            language: project.language,
+            share_id: project.share_id
+          })
+        };
+      }
+
       if (path.startsWith('/share/') && method === 'GET') {
         const shareId = path.split('/')[2];
         
