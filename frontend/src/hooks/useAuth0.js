@@ -18,33 +18,45 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Auth0 state:', { isAuthenticated, isLoading, auth0User });
+    
     const initializeAuth = async () => {
-      if (isAuthenticated && auth0User) {
-        try {
+      try {
+        if (isAuthenticated && auth0User) {
+          console.log('User authenticated, getting token...');
           const token = await getAccessTokenSilently();
           localStorage.setItem('auth0_token', token);
+          console.log('Token saved, fetching profile...');
           await fetchUserProfile(auth0User);
-        } catch (error) {
-          console.error('Auth initialization error:', error);
+        } else {
+          console.log('User not authenticated');
+          setUser(null);
+          localStorage.removeItem('auth0_token');
         }
-      } else if (!isAuthenticated) {
-        setUser(null);
-        localStorage.removeItem('auth0_token');
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     if (!isLoading) {
       initializeAuth();
+    } else {
+      console.log('Auth0 still loading...');
     }
   }, [isAuthenticated, auth0User, isLoading, getAccessTokenSilently]);
 
   const fetchUserProfile = async (auth0User) => {
     try {
+      console.log('Fetching user profile for:', auth0User.sub);
       const response = await api.get(`/users/${auth0User.sub}`);
+      console.log('User profile found:', response.data);
       setUser(response.data);
     } catch (error) {
+      console.log('User profile error:', error.response?.status);
       if (error.response?.status === 404) {
+        console.log('Creating new user profile...');
         const newUser = {
           id: auth0User.sub,
           email: auth0User.email,
@@ -56,11 +68,14 @@ export const AuthProvider = ({ children }) => {
         
         try {
           const response = await api.post('/users', newUser);
+          console.log('User created:', response.data);
           setUser(response.data);
         } catch (createError) {
           console.error('Error creating user profile:', createError);
           setUser(newUser);
         }
+      } else {
+        console.error('Error fetching profile:', error);
       }
     }
   };
