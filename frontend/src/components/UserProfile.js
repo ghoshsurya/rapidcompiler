@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-// import { supabase } from '../lib/supabase'; // COMMENTED OUT - MIGRATED TO AUTH0
-import { User, Mail, Lock, Camera, Download, Code, Calendar } from 'lucide-react';
+import { api } from '../lib/supabase';
+import { User, Mail, Lock, Camera, Download, Code, Calendar, Trash2, AlertTriangle } from 'lucide-react';
 
 const UserProfile = ({ darkMode }) => {
-  const { user, updateProfile, updatePassword, uploadAvatar } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,6 +16,7 @@ const UserProfile = ({ darkMode }) => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -33,13 +34,8 @@ const UserProfile = ({ darkMode }) => {
 
   const fetchProjects = async () => {
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-      
-      if (!error) setProjects(data || []);
+      const response = await api.get('/projects');
+      setProjects(response.data || []);
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
@@ -49,15 +45,16 @@ const UserProfile = ({ darkMode }) => {
     e.preventDefault();
     setLoading(true);
     
-    const result = await updateProfile({
-      username: formData.username,
-      full_name: formData.full_name
-    });
-    
-    if (result.success) {
+    try {
+      await api.put(`/users/${user.id}`, {
+        username: formData.username,
+        full_name: formData.full_name
+      });
       alert('Profile updated successfully!');
-    } else {
-      alert('Error: ' + result.error);
+      // Update local user data
+      window.location.reload();
+    } catch (error) {
+      alert('Error updating profile: ' + error.message);
     }
     setLoading(false);
   };
@@ -70,31 +67,28 @@ const UserProfile = ({ darkMode }) => {
       return;
     }
     
-    setLoading(true);
-    const result = await updatePassword(formData.newPassword);
-    
-    if (result.success) {
-      alert('Password updated successfully!');
-      setFormData({ ...formData, currentPassword: '', newPassword: '', confirmPassword: '' });
-    } else {
-      alert('Error: ' + result.error);
-    }
-    setLoading(false);
+    alert('Password changes must be done through Auth0. Please use the "Forgot Password" option on the login page.');
   };
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    setLoading(true);
-    const result = await uploadAvatar(file);
-    
-    if (result.success) {
-      alert('Avatar updated successfully!');
-    } else {
-      alert('Error: ' + result.error);
+    alert('Avatar upload feature coming soon! For now, your Auth0 profile picture is used.');
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setLoading(true);
+      await api.delete(`/users/${user.id}`);
+      alert('Account deleted successfully. You will be logged out.');
+      logout();
+    } catch (error) {
+      alert('Error deleting account: ' + error.message);
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
     }
-    setLoading(false);
   };
 
   const downloadProject = (project) => {
@@ -240,13 +234,24 @@ const UserProfile = ({ darkMode }) => {
                 </div>
               </div>
               
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? 'Updating...' : 'Update Profile'}
-              </button>
+              <div className="flex justify-between items-center">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Updating...' : 'Update Profile'}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center space-x-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete Account</span>
+                </button>
+              </div>
             </form>
           )}
 
@@ -336,6 +341,70 @@ const UserProfile = ({ darkMode }) => {
             </div>
           )}
         </div>
+
+        {/* Delete Account Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className={`max-w-md w-full mx-4 p-6 rounded-lg ${
+              darkMode ? 'bg-dark-surface' : 'bg-white'
+            }`}>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-red-600">Delete Account</h3>
+                  <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    This action cannot be undone
+                  </p>
+                </div>
+              </div>
+              
+              <div className={`p-4 rounded-lg mb-6 ${
+                darkMode ? 'bg-red-900 bg-opacity-20 border border-red-800' : 'bg-red-50 border border-red-200'
+              }`}>
+                <h4 className="font-semibold text-red-600 mb-2">Warning: This will permanently:</h4>
+                <ul className={`text-sm space-y-1 ${
+                  darkMode ? 'text-red-300' : 'text-red-700'
+                }`}>
+                  <li>• Delete your account and profile</li>
+                  <li>• Remove all your projects ({projects.length} projects)</li>
+                  <li>• Invalidate all shared project links</li>
+                  <li>• Log you out immediately</li>
+                </ul>
+              </div>
+              
+              <div className={`p-4 rounded-lg mb-6 ${
+                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'
+              }`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <strong>Before you delete:</strong> Consider downloading your projects first. 
+                  You can do this from the "My Projects" tab.
+                </p>
+              </div>
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className={`flex-1 px-4 py-2 rounded-lg border ${
+                    darkMode 
+                      ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-semibold"
+                >
+                  {loading ? 'Deleting...' : 'Delete Forever'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

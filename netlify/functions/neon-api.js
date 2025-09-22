@@ -319,6 +319,90 @@ exports.handler = async (event, context) => {
         };
       }
 
+      if (path.startsWith('/users/') && method === 'PUT') {
+        const userId = path.split('/')[2];
+        const userData = JSON.parse(event.body);
+        
+        if (userId !== event.user.sub) {
+          return {
+            statusCode: 403,
+            headers,
+            body: JSON.stringify({ error: 'Unauthorized' })
+          };
+        }
+        
+        const result = await dbClient.query(`
+          UPDATE users 
+          SET username = $1, full_name = $2, updated_at = $3
+          WHERE id = $4
+          RETURNING *
+        `, [
+          userData.username,
+          userData.full_name,
+          new Date(),
+          userId
+        ]);
+
+        const user = result.rows[0];
+        if (!user) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'User not found' })
+          };
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            full_name: user.full_name,
+            avatar_url: user.avatar_url,
+            is_admin: user.is_admin,
+            created_at: user.created_at
+          })
+        };
+      }
+
+      if (path.startsWith('/users/') && method === 'DELETE') {
+        const userId = path.split('/')[2];
+        
+        if (userId !== event.user.sub) {
+          return {
+            statusCode: 403,
+            headers,
+            body: JSON.stringify({ error: 'Unauthorized' })
+          };
+        }
+        
+        // Delete all user's projects first
+        await dbClient.query('DELETE FROM projects WHERE user_id = $1', [userId]);
+        
+        // Delete user
+        const result = await dbClient.query(
+          'DELETE FROM users WHERE id = $1 RETURNING *',
+          [userId]
+        );
+
+        const user = result.rows[0];
+        if (!user) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'User not found' })
+          };
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ message: 'Account deleted successfully' })
+        };
+      }
+
       return {
         statusCode: 404,
         headers,
