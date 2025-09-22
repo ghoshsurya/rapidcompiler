@@ -61,7 +61,6 @@ function App() {
                 <Routes>
                   <Route path="/" element={<CodeEditor darkMode={darkMode} />} />
                   <Route path="/login" element={<Auth darkMode={darkMode} />} />
-                  <Route path="/register" element={<Auth darkMode={darkMode} />} />
                   <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><UserProfile darkMode={darkMode} /></ProtectedRoute>} />
                   <Route path="/share/:shareId" element={<SharedProject darkMode={darkMode} />} />

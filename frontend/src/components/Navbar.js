@@ -68,20 +68,13 @@ const Navbar = ({ darkMode, setDarkMode }) => {
               </button>
             </div>
           ) : (
-            <div className="flex items-center space-x-1 sm:space-x-2">
-              <Link
-                to="/login"
-                className={`px-2 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="px-2 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Register
-              </Link>
-            </div>
+            <Link
+              to="/login"
+              className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+            >
+              <User className="h-4 w-4" />
+              <span>Account</span>
+            </Link>
           )}
         </div>
       </div>

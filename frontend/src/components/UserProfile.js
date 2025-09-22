@@ -67,7 +67,36 @@ const UserProfile = ({ darkMode }) => {
       return;
     }
     
-    alert('Password changes must be done through Auth0. Please use the "Forgot Password" option on the login page.');
+    if (formData.newPassword.length < 8) {
+      alert('Password must be at least 8 characters long!');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Trigger Auth0 password reset for the user
+      const response = await fetch(`https://${process.env.REACT_APP_AUTH0_DOMAIN}/dbconnections/change_password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          client_id: process.env.REACT_APP_AUTH0_CLIENT_ID,
+          email: user.email,
+          connection: 'Username-Password-Authentication'
+        })
+      });
+      
+      if (response.ok) {
+        alert('Password reset email sent! Check your email to set a new password.');
+        setFormData({ ...formData, newPassword: '', confirmPassword: '' });
+      } else {
+        alert('Failed to send password reset email. Please try again.');
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
+    setLoading(false);
   };
 
   const handleAvatarUpload = async (e) => {
@@ -256,45 +285,43 @@ const UserProfile = ({ darkMode }) => {
           )}
 
           {activeTab === 'security' && (
-            <form onSubmit={handlePasswordUpdate} className="space-y-6">
-              <h3 className="text-xl font-semibold mb-4">Change Password</h3>
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold mb-4">Security Settings</h3>
               
-              <div className="space-y-4 max-w-md">
-                <div>
-                  <label className="block text-sm font-medium mb-2">New Password</label>
-                  <input
-                    type="password"
-                    value={formData.newPassword}
-                    onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                    className={`w-full px-3 py-2 border rounded-lg ${
-                      darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
-                    }`}
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Confirm New Password</label>
-                  <input
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className={`w-full px-3 py-2 border rounded-lg ${
-                      darkMode ? 'bg-dark-bg border-dark-border text-dark-text' : 'bg-white border-gray-300'
-                    }`}
-                    required
-                  />
-                </div>
+              <div className={`p-4 rounded-lg ${
+                darkMode ? 'bg-blue-900 bg-opacity-20 border border-blue-800' : 'bg-blue-50 border border-blue-200'
+              }`}>
+                <h4 className="font-semibold text-blue-600 mb-2">Password Management</h4>
+                <p className={`text-sm mb-4 ${
+                  darkMode ? 'text-blue-300' : 'text-blue-700'
+                }`}>
+                  Your account is secured with Auth0. Click below to receive a password reset email.
+                </p>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePasswordUpdate(e);
+                  }}
+                  disabled={loading}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Sending...' : 'Send Password Reset Email'}
+                </button>
               </div>
               
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? 'Updating...' : 'Update Password'}
-              </button>
-            </form>
+              <div className={`p-4 rounded-lg ${
+                darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-gray-50 border border-gray-200'
+              }`}>
+                <h4 className="font-semibold mb-2">Account Security</h4>
+                <ul className={`text-sm space-y-1 ${
+                  darkMode ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  <li>• Your account is protected by Auth0 security</li>
+                  <li>• Two-factor authentication available through Auth0</li>
+                  <li>• All login attempts are monitored</li>
+                </ul>
+              </div>
+            </div>
           )}
 
           {activeTab === 'projects' && (
