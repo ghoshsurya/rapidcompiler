@@ -27,6 +27,9 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Auth initialization error:', error);
         }
+      } else if (!isAuthenticated) {
+        setUser(null);
+        localStorage.removeItem('auth0_token');
       }
       setLoading(false);
     };
