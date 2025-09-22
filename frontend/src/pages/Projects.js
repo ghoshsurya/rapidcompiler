@@ -32,6 +32,20 @@ const Projects = () => {
     }
   };
 
+  const deleteProject = async (projectId) => {
+    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/projects/${projectId}`);
+      alert('Project deleted successfully!');
+      fetchProjects(); // Refresh the list
+    } catch (error) {
+      alert('Failed to delete project');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -107,6 +121,13 @@ const Projects = () => {
                   title="Share project"
                 >
                   <Share className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => deleteProject(project.id)}
+                  className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                  title="Delete project"
+                >
+                  <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             </div>

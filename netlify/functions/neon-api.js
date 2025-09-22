@@ -295,6 +295,30 @@ exports.handler = async (event, context) => {
         };
       }
 
+      if (path.startsWith('/projects/') && method === 'DELETE') {
+        const projectId = path.split('/')[2];
+        
+        const result = await dbClient.query(
+          'DELETE FROM projects WHERE id = $1 AND user_id = $2 RETURNING *',
+          [projectId, event.user.sub]
+        );
+
+        const project = result.rows[0];
+        if (!project) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'Project not found' })
+          };
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({ message: 'Project deleted successfully' })
+        };
+      }
+
       return {
         statusCode: 404,
         headers,
