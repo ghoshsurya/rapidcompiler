@@ -168,6 +168,30 @@ exports.handler = async (event, context) => {
         };
       }
 
+      if (path.startsWith('/projects/') && method === 'GET') {
+        const projectId = path.split('/')[2];
+        
+        const result = await dbClient.query(
+          'SELECT * FROM projects WHERE id = $1 AND user_id = $2',
+          [projectId, event.user.sub]
+        );
+
+        const project = result.rows[0];
+        if (!project) {
+          return {
+            statusCode: 404,
+            headers,
+            body: JSON.stringify({ error: 'Project not found' })
+          };
+        }
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify(project)
+        };
+      }
+
       if (path === '/projects' && method === 'POST') {
         const projectData = JSON.parse(event.body);
         

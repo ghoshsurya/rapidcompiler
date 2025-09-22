@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { Play, Save, Share, Terminal, FileText, Download } from 'lucide-react';
 import { api } from '../lib/supabase';
@@ -105,6 +106,7 @@ echo "Hello, World!\n";
 
 const CodeEditor = ({ darkMode }) => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [language, setLanguage] = useState('python');
   const [code, setCode] = useState(LANGUAGE_TEMPLATES.python);
   const [input, setInput] = useState('');
@@ -113,7 +115,35 @@ const CodeEditor = ({ darkMode }) => {
   const [projectTitle, setProjectTitle] = useState('Untitled Project');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [webPreview, setWebPreview] = useState('');
+  const [loading, setLoading] = useState(false);
   const editorRef = useRef(null);
+
+  // Load project if project ID is in URL
+  useEffect(() => {
+    const projectId = searchParams.get('project');
+    if (projectId && user) {
+      loadProject(projectId);
+    }
+  }, [searchParams, user]);
+
+  const loadProject = async (projectId) => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/projects/${projectId}`);
+      const project = response.data;
+      
+      setProjectTitle(project.title);
+      setLanguage(project.language);
+      setCode(project.code);
+      setOutput('');
+      setWebPreview('');
+    } catch (error) {
+      console.error('Failed to load project:', error);
+      alert('Failed to load project');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLanguageChange = useCallback((newLanguage) => {
     setLanguage(newLanguage);
