@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/supabase';
-import { User, Mail, Lock, Camera, Download, Code, Calendar, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Mail, Lock, Camera, Download, Code, Calendar, Trash2, AlertTriangle, Share } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const UserProfile = ({ darkMode }) => {
   const { user, logout } = useAuth();
@@ -117,6 +118,30 @@ const UserProfile = ({ darkMode }) => {
     } finally {
       setLoading(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const shareProject = async (project) => {
+    try {
+      const shareUrl = `${window.location.origin}/share/${project.share_id}`;
+      navigator.clipboard.writeText(shareUrl);
+      alert('Share link copied to clipboard!');
+    } catch (error) {
+      alert('Failed to share project');
+    }
+  };
+
+  const deleteProject = async (projectId) => {
+    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/projects/${projectId}`);
+      alert('Project deleted successfully!');
+      fetchProjects();
+    } catch (error) {
+      alert('Failed to delete project');
     }
   };
 
@@ -352,15 +377,69 @@ const UserProfile = ({ darkMode }) => {
                         {new Date(project.updated_at).toLocaleDateString()}
                       </p>
                       
-                      <button
-                        onClick={() => downloadProject(project)}
-                        className={`flex items-center space-x-1 text-sm px-3 py-1 rounded hover:bg-opacity-80 ${
-                          darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        <Download className="h-3 w-3" />
-                        <span>Download</span>
-                      </button>
+                      {/* Desktop Actions */}
+                      <div className="hidden sm:flex items-center space-x-2">
+                        <Link
+                          to={`/?project=${project.id}`}
+                          className="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Open
+                        </Link>
+                        <button
+                          onClick={() => shareProject(project)}
+                          className="p-1 text-gray-600 hover:text-blue-600 rounded"
+                          title="Share"
+                        >
+                          <Share className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => downloadProject(project)}
+                          className="p-1 text-gray-600 hover:text-green-600 rounded"
+                          title="Download"
+                        >
+                          <Download className="h-3 w-3" />
+                        </button>
+                        <button
+                          onClick={() => deleteProject(project.id)}
+                          className="p-1 text-gray-600 hover:text-red-600 rounded"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+
+                      {/* Mobile Actions */}
+                      <div className="sm:hidden space-y-2 mt-2">
+                        <Link
+                          to={`/?project=${project.id}`}
+                          className="block w-full text-center px-3 py-2 bg-blue-600 text-white rounded text-sm"
+                        >
+                          Open Project
+                        </Link>
+                        <div className="grid grid-cols-3 gap-1">
+                          <button
+                            onClick={() => shareProject(project)}
+                            className="flex flex-col items-center px-2 py-2 bg-green-600 text-white rounded text-xs"
+                          >
+                            <Share className="h-4 w-4 mb-1" />
+                            <span>Share</span>
+                          </button>
+                          <button
+                            onClick={() => downloadProject(project)}
+                            className="flex flex-col items-center px-2 py-2 bg-gray-600 text-white rounded text-xs"
+                          >
+                            <Download className="h-4 w-4 mb-1" />
+                            <span>Download</span>
+                          </button>
+                          <button
+                            onClick={() => deleteProject(project.id)}
+                            className="flex flex-col items-center px-2 py-2 bg-red-600 text-white rounded text-xs"
+                          >
+                            <Trash2 className="h-4 w-4 mb-1" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
