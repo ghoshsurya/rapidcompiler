@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FileText, Calendar, Share, Trash2 } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../lib/supabase';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -13,7 +13,7 @@ const Projects = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/projects');
+      const response = await api.get('/projects');
       setProjects(response.data);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
@@ -22,10 +22,9 @@ const Projects = () => {
     }
   };
 
-  const shareProject = async (projectId) => {
+  const shareProject = async (project) => {
     try {
-      const response = await axios.post(`http://localhost:5000/api/projects/${projectId}/share`);
-      const shareUrl = `${window.location.origin}${response.data.share_url}`;
+      const shareUrl = `${window.location.origin}/share/${project.share_id}`;
       navigator.clipboard.writeText(shareUrl);
       alert('Share link copied to clipboard!');
     } catch (error) {
@@ -103,7 +102,7 @@ const Projects = () => {
                   Open
                 </Link>
                 <button
-                  onClick={() => shareProject(project.id)}
+                  onClick={() => shareProject(project)}
                   className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   title="Share project"
                 >

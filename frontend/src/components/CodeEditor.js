@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Save, Share, Terminal, FileText, Download } from 'lucide-react';
-import axios from 'axios';
+import { api } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-// import { supabase } from '../lib/supabase'; // COMMENTED OUT - MIGRATED TO AUTH0
 import { debounce } from '../utils/performance';
 
 const LANGUAGE_TEMPLATES = {
@@ -580,21 +579,22 @@ const CodeEditor = ({ darkMode }) => {
       }
       
       // Backend execution for other languages
-      const response = await axios.post('/api/run', {
-        language,
-        code,
-        input
+      const response = await fetch('/.netlify/functions/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language, code, input })
       });
+      const data = await response.json();
       
-      if (response.data.error) {
-        setOutput(`Error: ${response.data.error}`);
+      if (data.error) {
+        setOutput(`Error: ${data.error}`);
         setWebPreview('');
       } else {
-        setOutput(response.data.output || 'Program executed successfully (no output)');
+        setOutput(data.output || 'Program executed successfully (no output)');
         setWebPreview('');
       }
     } catch (error) {
-      setOutput(`Error: ${error.response?.data?.error || 'Failed to execute code'}`);
+      setOutput(`Error: ${error.message || 'Failed to execute code'}`);
     } finally {
       setIsRunning(false);
     }
@@ -607,18 +607,11 @@ const CodeEditor = ({ darkMode }) => {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
-          title: projectTitle,
-          language,
-          code,
-          user_id: user.id
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
+      const response = await api.post('/projects', {
+        title: projectTitle,
+        language,
+        code
+      });
       
       alert('Project saved successfully!');
       setShowSaveDialog(false);
@@ -634,30 +627,14 @@ const CodeEditor = ({ darkMode }) => {
     }
 
     try {
-      // First save the project
-      const { data: project, error: saveError } = await supabase
-        .from('projects')
-        .insert({
-          title: projectTitle,
-          language,
-          code,
-          user_id: user.id
-        })
-        .select()
-        .single();
+      // Save the project and get share_id
+      const response = await api.post('/projects', {
+        title: projectTitle,
+        language,
+        code
+      });
       
-      if (saveError) throw saveError;
-
-      // Generate share ID and update project
-      const shareId = Math.random().toString(36).substring(2, 15);
-      const { error: updateError } = await supabase
-        .from('projects')
-        .update({ share_id: shareId, is_public: true })
-        .eq('id', project.id);
-      
-      if (updateError) throw updateError;
-
-      const shareUrl = `${window.location.origin}/share/${shareId}`;
+      const shareUrl = `${window.location.origin}/share/${response.data.share_id}`;
       await navigator.clipboard.writeText(shareUrl);
       alert('Share link copied to clipboard!\n' + shareUrl);
     } catch (error) {
