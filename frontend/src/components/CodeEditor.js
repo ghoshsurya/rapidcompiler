@@ -773,9 +773,25 @@ const CodeEditor = ({ darkMode }) => {
         {/* Code Editor */}
         <div className="flex-1 flex flex-col h-64 lg:h-auto" style={{minWidth: '300px'}}>
           <div className={`border-b ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
-            <div className="flex items-center space-x-2">
-              <FileText className="h-4 w-4" />
-              <span className="text-sm font-medium">Code Editor</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4" />
+                <span className="text-sm font-medium">Code Editor</span>
+              </div>
+              {/* Mobile Select All Button */}
+              <button
+                onClick={() => {
+                  if (editorRef.current) {
+                    editorRef.current.getModel().selectAll();
+                    editorRef.current.focus();
+                  }
+                }}
+                className={`sm:hidden px-2 py-1 text-xs rounded ${
+                  darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                }`}
+              >
+                Select All
+              </button>
             </div>
           </div>
           <div className="flex-1">
@@ -865,6 +881,24 @@ const CodeEditor = ({ darkMode }) => {
                       element.style.webkitUserSelect = 'text';
                       element.style.userSelect = 'text';
                       element.style.webkitTouchCallout = 'default';
+                    });
+                    
+                    // Add keyboard shortcuts for mobile
+                    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyA, () => {
+                      editor.getModel().selectAll();
+                      editor.focus();
+                    });
+                    
+                    // Add context menu option for select all
+                    editor.addAction({
+                      id: 'select-all-mobile',
+                      label: 'Select All',
+                      contextMenuGroupId: 'navigation',
+                      contextMenuOrder: 1,
+                      run: () => {
+                        editor.getModel().selectAll();
+                        editor.focus();
+                      }
                     });
                   }
                 }
