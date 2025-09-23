@@ -117,6 +117,8 @@ const CodeEditor = ({ darkMode }) => {
   const [webPreview, setWebPreview] = useState('');
   const [loading, setLoading] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [editorHeight, setEditorHeight] = useState(60); // percentage
+  const [isResizing, setIsResizing] = useState(false);
   const editorRef = useRef(null);
 
   // Load project if project ID is in URL
@@ -774,9 +776,15 @@ const CodeEditor = ({ darkMode }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:flex-row">
+      <div className="flex-1 flex flex-col">
         {/* Code Editor */}
-        <div className="flex-1 flex flex-col h-64 lg:h-auto" style={{minWidth: '300px'}}>
+        <div 
+          className="flex flex-col" 
+          style={{
+            height: `${editorHeight}%`,
+            minHeight: '200px'
+          }}
+        >
           <div className={`border-b ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -1125,28 +1133,28 @@ const CodeEditor = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Vertical Resize Handle - Always Visible */}
+        {/* Height Resize Handle */}
         <div 
-          className={`w-2 sm:w-1 cursor-col-resize hover:bg-blue-500 ${darkMode ? 'bg-blue-600' : 'bg-blue-400'} touch-none`}
+          className={`h-3 cursor-row-resize flex items-center justify-center group transition-colors ${
+            darkMode ? 'bg-gray-700 hover:bg-blue-600' : 'bg-gray-200 hover:bg-blue-500'
+          } ${isResizing ? 'bg-blue-500' : ''}`}
           onMouseDown={(e) => {
-            const startX = e.clientX;
-            const leftPanel = e.target.previousElementSibling;
-            const rightPanel = e.target.nextElementSibling;
-            const startLeftWidth = leftPanel.offsetWidth;
-            const startRightWidth = rightPanel.offsetWidth;
+            e.preventDefault();
+            setIsResizing(true);
+            const startY = e.clientY;
+            const container = e.target.parentElement;
+            const containerHeight = container.offsetHeight;
+            const startHeight = editorHeight;
             
             const handleMouseMove = (e) => {
-              const deltaX = e.clientX - startX;
-              const newLeftWidth = startLeftWidth + deltaX;
-              const newRightWidth = startRightWidth - deltaX;
-              
-              if (newLeftWidth > 300 && newRightWidth > 200) {
-                leftPanel.style.width = newLeftWidth + 'px';
-                rightPanel.style.width = newRightWidth + 'px';
-              }
+              const deltaY = e.clientY - startY;
+              const deltaPercent = (deltaY / containerHeight) * 100;
+              const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
+              setEditorHeight(newHeight);
             };
             
             const handleMouseUp = () => {
+              setIsResizing(false);
               document.removeEventListener('mousemove', handleMouseMove);
               document.removeEventListener('mouseup', handleMouseUp);
             };
@@ -1154,12 +1162,46 @@ const CodeEditor = ({ darkMode }) => {
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
           }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setIsResizing(true);
+            const startY = e.touches[0].clientY;
+            const container = e.target.parentElement;
+            const containerHeight = container.offsetHeight;
+            const startHeight = editorHeight;
+            
+            const handleTouchMove = (e) => {
+              const deltaY = e.touches[0].clientY - startY;
+              const deltaPercent = (deltaY / containerHeight) * 100;
+              const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
+              setEditorHeight(newHeight);
+            };
+            
+            const handleTouchEnd = () => {
+              setIsResizing(false);
+              document.removeEventListener('touchmove', handleTouchMove);
+              document.removeEventListener('touchend', handleTouchEnd);
+            };
+            
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd);
+          }}
+        >
+          <div className={`w-12 h-1 rounded-full transition-colors ${
+            darkMode ? 'bg-gray-500 group-hover:bg-white' : 'bg-gray-400 group-hover:bg-white'
+          } ${isResizing ? 'bg-white' : ''}`} />
         />
 
         {/* Input/Output Panel */}
-        <div className={`flex flex-col w-full lg:w-96 border-t lg:border-t-0 lg:border-l ${darkMode ? 'border-dark-border' : 'border-gray-200'}`} style={{minWidth: '200px'}}>
+        <div 
+          className={`flex flex-col border-t ${darkMode ? 'border-dark-border' : 'border-gray-200'}`}
+          style={{
+            height: `${100 - editorHeight}%`,
+            minHeight: '150px'
+          }}
+        >
           {/* Input Section */}
-          <div className="flex flex-col h-32 lg:h-1/2">
+          <div className="flex flex-col h-1/2">
             <div className={`border-b ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
               <div className="flex items-center space-x-2">
                 <Terminal className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -1178,40 +1220,11 @@ const CodeEditor = ({ darkMode }) => {
             />
           </div>
 
-          {/* Horizontal Resize Handle - Always Visible */}
-          <div 
-            className={`h-2 sm:h-1 cursor-row-resize hover:bg-blue-500 ${darkMode ? 'bg-blue-600' : 'bg-blue-400'} touch-none`}
-            onMouseDown={(e) => {
-              const startY = e.clientY;
-              const topPanel = e.target.previousElementSibling;
-              const bottomPanel = e.target.nextElementSibling;
-              const container = e.target.parentElement;
-              const containerHeight = container.offsetHeight;
-              const startTopHeight = topPanel.offsetHeight;
-              
-              const handleMouseMove = (e) => {
-                const deltaY = e.clientY - startY;
-                const newTopHeight = startTopHeight + deltaY;
-                const newBottomHeight = containerHeight - newTopHeight - 4;
-                
-                if (newTopHeight > 100 && newBottomHeight > 100) {
-                  topPanel.style.height = newTopHeight + 'px';
-                  bottomPanel.style.height = newBottomHeight + 'px';
-                }
-              };
-              
-              const handleMouseUp = () => {
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
-              };
-              
-              document.addEventListener('mousemove', handleMouseMove);
-              document.addEventListener('mouseup', handleMouseUp);
-            }}
-          />
+          {/* Input/Output Divider */}
+          <div className={`h-px ${darkMode ? 'bg-dark-border' : 'bg-gray-200'}`} />
 
           {/* Output Section */}
-          <div className="flex flex-col flex-1 lg:h-1/2">
+          <div className="flex flex-col h-1/2">
             <div className={`border-b border-t lg:border-t-0 ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
               <div className="flex items-center space-x-2">
                 <Terminal className="h-3 w-3 sm:h-4 sm:w-4" />
