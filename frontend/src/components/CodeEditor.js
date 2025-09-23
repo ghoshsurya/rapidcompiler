@@ -118,7 +118,9 @@ const CodeEditor = ({ darkMode }) => {
   const [loading, setLoading] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState(null);
   const [editorHeight, setEditorHeight] = useState(60); // percentage
+  const [editorWidth, setEditorWidth] = useState(50); // percentage for desktop
   const [isResizing, setIsResizing] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const editorRef = useRef(null);
 
   // Load project if project ID is in URL
@@ -128,6 +130,15 @@ const CodeEditor = ({ darkMode }) => {
       loadProject(projectId);
     }
   }, [searchParams, user]);
+
+  // Handle window resize for desktop detection
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const loadProject = async (projectId) => {
     try {
@@ -776,11 +787,14 @@ const CodeEditor = ({ darkMode }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex ${isDesktop ? 'flex-row' : 'flex-col'}`}>
         {/* Code Editor */}
         <div 
           className="flex flex-col" 
-          style={{
+          style={isDesktop ? {
+            width: `${editorWidth}%`,
+            minWidth: '300px'
+          } : {
             height: `${editorHeight}%`,
             minHeight: '200px'
           }}
@@ -1133,69 +1147,120 @@ const CodeEditor = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Height Resize Handle */}
+        {/* Resize Handle */}
         <div 
-          className={`h-3 cursor-row-resize flex items-center justify-center group transition-colors ${
+          className={`${isDesktop ? 'w-3 cursor-col-resize' : 'h-3 cursor-row-resize'} flex items-center justify-center group transition-colors ${
             darkMode ? 'bg-gray-700 hover:bg-blue-600' : 'bg-gray-200 hover:bg-blue-500'
           } ${isResizing ? 'bg-blue-500' : ''}`}
           onMouseDown={(e) => {
             e.preventDefault();
             setIsResizing(true);
-            const startY = e.clientY;
-            const container = e.target.parentElement;
-            const containerHeight = container.offsetHeight;
-            const startHeight = editorHeight;
             
-            const handleMouseMove = (e) => {
-              const deltaY = e.clientY - startY;
-              const deltaPercent = (deltaY / containerHeight) * 100;
-              const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
-              setEditorHeight(newHeight);
-            };
-            
-            const handleMouseUp = () => {
-              setIsResizing(false);
-              document.removeEventListener('mousemove', handleMouseMove);
-              document.removeEventListener('mouseup', handleMouseUp);
-            };
-            
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
+            if (isDesktop) {
+              const startX = e.clientX;
+              const container = e.target.parentElement;
+              const containerWidth = container.offsetWidth;
+              const startWidth = editorWidth;
+              
+              const handleMouseMove = (e) => {
+                const deltaX = e.clientX - startX;
+                const deltaPercent = (deltaX / containerWidth) * 100;
+                const newWidth = Math.max(20, Math.min(80, startWidth + deltaPercent));
+                setEditorWidth(newWidth);
+              };
+              
+              const handleMouseUp = () => {
+                setIsResizing(false);
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+              };
+              
+              document.addEventListener('mousemove', handleMouseMove);
+              document.addEventListener('mouseup', handleMouseUp);
+            } else {
+              const startY = e.clientY;
+              const container = e.target.parentElement;
+              const containerHeight = container.offsetHeight;
+              const startHeight = editorHeight;
+              
+              const handleMouseMove = (e) => {
+                const deltaY = e.clientY - startY;
+                const deltaPercent = (deltaY / containerHeight) * 100;
+                const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
+                setEditorHeight(newHeight);
+              };
+              
+              const handleMouseUp = () => {
+                setIsResizing(false);
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+              };
+              
+              document.addEventListener('mousemove', handleMouseMove);
+              document.addEventListener('mouseup', handleMouseUp);
+            }
           }}
           onTouchStart={(e) => {
             e.preventDefault();
             setIsResizing(true);
-            const startY = e.touches[0].clientY;
-            const container = e.target.parentElement;
-            const containerHeight = container.offsetHeight;
-            const startHeight = editorHeight;
             
-            const handleTouchMove = (e) => {
-              const deltaY = e.touches[0].clientY - startY;
-              const deltaPercent = (deltaY / containerHeight) * 100;
-              const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
-              setEditorHeight(newHeight);
-            };
-            
-            const handleTouchEnd = () => {
-              setIsResizing(false);
-              document.removeEventListener('touchmove', handleTouchMove);
-              document.removeEventListener('touchend', handleTouchEnd);
-            };
-            
-            document.addEventListener('touchmove', handleTouchMove, { passive: false });
-            document.addEventListener('touchend', handleTouchEnd);
+            if (isDesktop) {
+              const startX = e.touches[0].clientX;
+              const container = e.target.parentElement;
+              const containerWidth = container.offsetWidth;
+              const startWidth = editorWidth;
+              
+              const handleTouchMove = (e) => {
+                const deltaX = e.touches[0].clientX - startX;
+                const deltaPercent = (deltaX / containerWidth) * 100;
+                const newWidth = Math.max(20, Math.min(80, startWidth + deltaPercent));
+                setEditorWidth(newWidth);
+              };
+              
+              const handleTouchEnd = () => {
+                setIsResizing(false);
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+              };
+              
+              document.addEventListener('touchmove', handleTouchMove, { passive: false });
+              document.addEventListener('touchend', handleTouchEnd);
+            } else {
+              const startY = e.touches[0].clientY;
+              const container = e.target.parentElement;
+              const containerHeight = container.offsetHeight;
+              const startHeight = editorHeight;
+              
+              const handleTouchMove = (e) => {
+                const deltaY = e.touches[0].clientY - startY;
+                const deltaPercent = (deltaY / containerHeight) * 100;
+                const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
+                setEditorHeight(newHeight);
+              };
+              
+              const handleTouchEnd = () => {
+                setIsResizing(false);
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+              };
+              
+              document.addEventListener('touchmove', handleTouchMove, { passive: false });
+              document.addEventListener('touchend', handleTouchEnd);
+            }
           }}
         >
-          <div className={`w-12 h-1 rounded-full transition-colors ${
+          <div className={`${isDesktop ? 'w-1 h-12' : 'w-12 h-1'} rounded-full transition-colors ${
             darkMode ? 'bg-gray-500 group-hover:bg-white' : 'bg-gray-400 group-hover:bg-white'
           } ${isResizing ? 'bg-white' : ''}`} />
-        />
+        </div>
 
         {/* Input/Output Panel */}
         <div 
-          className={`flex flex-col border-t ${darkMode ? 'border-dark-border' : 'border-gray-200'}`}
-          style={{
+          className={`flex flex-col ${isDesktop ? 'border-l' : 'border-t'} ${darkMode ? 'border-dark-border' : 'border-gray-200'}`}
+          style={isDesktop ? {
+            width: `${100 - editorWidth}%`,
+            minWidth: '300px'
+          } : {
             height: `${100 - editorHeight}%`,
             minHeight: '150px'
           }}
