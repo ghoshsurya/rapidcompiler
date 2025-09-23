@@ -851,6 +851,24 @@ const CodeEditor = ({ darkMode }) => {
               onMount={(editor, monaco) => {
                 editorRef.current = editor;
                 
+                // Enable mobile text selection
+                if (window.innerWidth <= 768) {
+                  const domNode = editor.getDomNode();
+                  if (domNode) {
+                    domNode.style.webkitUserSelect = 'text';
+                    domNode.style.userSelect = 'text';
+                    domNode.style.webkitTouchCallout = 'default';
+                    
+                    // Force enable text selection on all child elements
+                    const viewLines = domNode.querySelectorAll('.view-lines, .view-line, .mtk1');
+                    viewLines.forEach(element => {
+                      element.style.webkitUserSelect = 'text';
+                      element.style.userSelect = 'text';
+                      element.style.webkitTouchCallout = 'default';
+                    });
+                  }
+                }
+                
                 // Register custom completions for each language
                 monaco.languages.registerCompletionItemProvider('python', {
                   provideCompletionItems: () => ({

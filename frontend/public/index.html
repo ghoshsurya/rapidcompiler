@@ -84,19 +84,32 @@
     <style>
       /* Mobile touch and selection fixes */
       * {
-        -webkit-touch-callout: default;
-        -webkit-user-select: text;
-        -khtml-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
-        user-select: text;
+        -webkit-touch-callout: default !important;
+        -webkit-user-select: text !important;
+        -khtml-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1);
       }
       
       /* Enable text selection in Monaco Editor */
-      .monaco-editor, .monaco-editor * {
+      .monaco-editor, .monaco-editor *, 
+      .monaco-editor .view-lines,
+      .monaco-editor .view-line,
+      .monaco-editor .mtk1,
+      .monaco-editor .monaco-mouse-cursor-text {
+        -webkit-touch-callout: default !important;
         -webkit-user-select: text !important;
         -moz-user-select: text !important;
         -ms-user-select: text !important;
+        user-select: text !important;
+        pointer-events: auto !important;
+      }
+      
+      /* Fix select all functionality */
+      .monaco-editor .selected-text {
+        -webkit-user-select: text !important;
         user-select: text !important;
       }
       
@@ -107,11 +120,31 @@
         font-size: 16px; /* Prevent zoom on iOS */
       }
       
-      /* Prevent desktop mode on mobile */
+      /* Mobile specific fixes */
       @media (max-width: 768px) {
         body {
           -webkit-text-size-adjust: 100%;
           -ms-text-size-adjust: 100%;
+          -webkit-touch-callout: default;
+          -webkit-user-select: text;
+        }
+        
+        /* Enable context menu on mobile */
+        .monaco-editor {
+          -webkit-touch-callout: default !important;
+          -webkit-user-select: text !important;
+          touch-action: manipulation;
+        }
+        
+        /* Fix mobile selection handles */
+        ::selection {
+          background: #007acc;
+          color: white;
+        }
+        
+        ::-moz-selection {
+          background: #007acc;
+          color: white;
         }
       }
     </style>
