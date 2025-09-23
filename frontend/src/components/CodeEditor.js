@@ -790,8 +790,8 @@ const CodeEditor = ({ darkMode }) => {
               onChange={(value) => setCode(value || '')}
               theme={darkMode ? 'vs-dark' : 'light'}
               options={{
-                minimap: { enabled: false },
-                fontSize: 14,
+                minimap: { enabled: window.innerWidth > 768 },
+                fontSize: window.innerWidth <= 768 ? 16 : 14,
                 wordWrap: 'on',
                 automaticLayout: true,
                 scrollBeyondLastLine: false,
@@ -801,6 +801,24 @@ const CodeEditor = ({ darkMode }) => {
                 acceptSuggestionOnEnter: 'on',
                 tabCompletion: 'on',
                 parameterHints: { enabled: true },
+                // Mobile-specific options
+                readOnly: false,
+                domReadOnly: false,
+                contextmenu: true,
+                mouseWheelZoom: false,
+                multiCursorModifier: 'ctrlCmd',
+                accessibilitySupport: 'auto',
+                // Touch and selection
+                selectionHighlight: true,
+                occurrencesHighlight: true,
+                codeLens: false,
+                folding: window.innerWidth > 768,
+                foldingHighlight: window.innerWidth > 768,
+                unfoldOnClickAfterEndOfLine: false,
+                // Mobile performance
+                smoothScrolling: false,
+                cursorBlinking: 'blink',
+                cursorSmoothCaretAnimation: false,
                 quickSuggestions: {
                   other: true,
                   comments: true,
