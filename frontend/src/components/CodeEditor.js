@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import { Play, Save, Share, Terminal, FileText, Download } from 'lucide-react';
+import { Play, Save, Share, Terminal, FileText, Download, Copy, Clipboard, Undo, Redo } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import { debounce } from '../utils/performance';
@@ -778,20 +778,103 @@ const CodeEditor = ({ darkMode }) => {
                 <FileText className="h-4 w-4" />
                 <span className="text-sm font-medium">Code Editor</span>
               </div>
-              {/* Mobile Select All Button */}
-              <button
-                onClick={() => {
-                  if (editorRef.current) {
-                    editorRef.current.getModel().selectAll();
-                    editorRef.current.focus();
-                  }
-                }}
-                className={`sm:hidden px-2 py-1 text-xs rounded ${
-                  darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
-                }`}
-              >
-                Select All
-              </button>
+              {/* Mobile Editor Toolbar */}
+              <div className="sm:hidden flex items-center space-x-1">
+                <button
+                  onClick={() => {
+                    if (editorRef.current) {
+                      editorRef.current.getModel().selectAll();
+                      editorRef.current.focus();
+                    }
+                  }}
+                  className={`px-2 py-1 text-xs rounded ${
+                    darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                  title="Select All"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={() => {
+                    if (editorRef.current) {
+                      const selection = editorRef.current.getSelection();
+                      if (selection && !selection.isEmpty()) {
+                        const selectedText = editorRef.current.getModel().getValueInRange(selection);
+                        navigator.clipboard.writeText(selectedText).then(() => {
+                          alert('Copied to clipboard!');
+                        }).catch(() => {
+                          // Fallback for older browsers
+                          const textArea = document.createElement('textarea');
+                          textArea.value = selectedText;
+                          document.body.appendChild(textArea);
+                          textArea.select();
+                          document.execCommand('copy');
+                          document.body.removeChild(textArea);
+                          alert('Copied to clipboard!');
+                        });
+                      } else {
+                        alert('Please select text first');
+                      }
+                    }
+                  }}
+                  className={`p-1 rounded ${
+                    darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                  title="Copy"
+                >
+                  <Copy className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={async () => {
+                    if (editorRef.current) {
+                      try {
+                        const text = await navigator.clipboard.readText();
+                        const selection = editorRef.current.getSelection();
+                        if (selection) {
+                          editorRef.current.executeEdits('paste', [{
+                            range: selection,
+                            text: text
+                          }]);
+                        }
+                      } catch (err) {
+                        alert('Paste failed. Please use long press and paste manually.');
+                      }
+                    }
+                  }}
+                  className={`p-1 rounded ${
+                    darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                  title="Paste"
+                >
+                  <Clipboard className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (editorRef.current) {
+                      editorRef.current.trigger('keyboard', 'undo', null);
+                    }
+                  }}
+                  className={`p-1 rounded ${
+                    darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                  title="Undo"
+                >
+                  <Undo className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (editorRef.current) {
+                      editorRef.current.trigger('keyboard', 'redo', null);
+                    }
+                  }}
+                  className={`p-1 rounded ${
+                    darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                  title="Redo"
+                >
+                  <Redo className="h-3 w-3" />
+                </button>
+              </div>
             </div>
           </div>
           <div className="flex-1">
@@ -889,7 +972,7 @@ const CodeEditor = ({ darkMode }) => {
                       editor.focus();
                     });
                     
-                    // Add context menu option for select all
+                    // Add mobile-friendly context menu actions
                     editor.addAction({
                       id: 'select-all-mobile',
                       label: 'Select All',
@@ -899,6 +982,49 @@ const CodeEditor = ({ darkMode }) => {
                         editor.getModel().selectAll();
                         editor.focus();
                       }
+                    });
+                    
+                    editor.addAction({
+                      id: 'copy-mobile',
+                      label: 'Copy',
+                      contextMenuGroupId: 'navigation',
+                      contextMenuOrder: 2,
+                      run: () => {
+                        const selection = editor.getSelection();
+                        if (selection && !selection.isEmpty()) {
+                          const selectedText = editor.getModel().getValueInRange(selection);
+                          navigator.clipboard.writeText(selectedText);
+                        }
+                      }
+                    });
+                    
+                    editor.addAction({
+                      id: 'paste-mobile',
+                      label: 'Paste',
+                      contextMenuGroupId: 'navigation',
+                      contextMenuOrder: 3,
+                      run: async () => {
+                        try {
+                          const text = await navigator.clipboard.readText();
+                          const selection = editor.getSelection();
+                          if (selection) {
+                            editor.executeEdits('paste', [{
+                              range: selection,
+                              text: text
+                            }]);
+                          }
+                        } catch (err) {
+                          console.log('Paste failed:', err);
+                        }
+                      }
+                    });
+                    
+                    // Enable better touch selection
+                    editor.updateOptions({
+                      selectOnLineNumbers: true,
+                      selectionHighlight: true,
+                      occurrencesHighlight: true,
+                      renderSelectionHighlight: true
                     });
                   }
                 }
