@@ -988,153 +988,23 @@ const CodeEditor = ({ darkMode }) => {
               onMount={(editor, monaco) => {
                 editorRef.current = editor;
                 
-                // Enable mobile text selection
-                if (window.innerWidth <= 768) {
-                  const domNode = editor.getDomNode();
-                  if (domNode) {
-                    domNode.style.webkitUserSelect = 'text';
-                    domNode.style.userSelect = 'text';
-                    domNode.style.webkitTouchCallout = 'default';
-                    
-                    // Force enable text selection on all child elements
-                    const viewLines = domNode.querySelectorAll('.view-lines, .view-line, .mtk1');
-                    viewLines.forEach(element => {
-                      element.style.webkitUserSelect = 'text';
-                      element.style.userSelect = 'text';
-                      element.style.webkitTouchCallout = 'default';
+                // Simple mobile text selection fix
+                const domNode = editor.getDomNode();
+                if (domNode) {
+                  // Force enable text selection
+                  domNode.style.webkitUserSelect = 'text';
+                  domNode.style.userSelect = 'text';
+                  domNode.style.webkitTouchCallout = 'default';
+                  
+                  // Apply to all Monaco elements after render
+                  setTimeout(() => {
+                    const elements = domNode.querySelectorAll('*');
+                    elements.forEach(el => {
+                      el.style.webkitUserSelect = 'text';
+                      el.style.userSelect = 'text';
+                      el.style.webkitTouchCallout = 'default';
                     });
-                    
-                    // Add keyboard shortcuts for mobile
-                    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyA, () => {
-                      editor.getModel().selectAll();
-                      editor.focus();
-                    });
-                    
-                    // Add mobile-friendly context menu actions
-                    editor.addAction({
-                      id: 'select-all-mobile',
-                      label: 'Select All',
-                      contextMenuGroupId: 'navigation',
-                      contextMenuOrder: 1,
-                      run: () => {
-                        const model = editor.getModel();
-                        const fullRange = model.getFullModelRange();
-                        editor.setSelection(fullRange);
-                        editor.focus();
-                      }
-                    });
-                    
-                    editor.addAction({
-                      id: 'copy-mobile',
-                      label: 'Copy',
-                      contextMenuGroupId: 'navigation',
-                      contextMenuOrder: 2,
-                      run: async () => {
-                        const selection = editor.getSelection();
-                        if (selection && !selection.isEmpty()) {
-                          const selectedText = editor.getModel().getValueInRange(selection);
-                          try {
-                            await navigator.clipboard.writeText(selectedText);
-                          } catch (err) {
-                            // Fallback
-                            const textArea = document.createElement('textarea');
-                            textArea.value = selectedText;
-                            textArea.style.position = 'fixed';
-                            textArea.style.left = '-999999px';
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
-                          }
-                        }
-                      }
-                    });
-                    
-                    editor.addAction({
-                      id: 'paste-mobile',
-                      label: 'Paste',
-                      contextMenuGroupId: 'navigation',
-                      contextMenuOrder: 3,
-                      run: async () => {
-                        try {
-                          const text = await navigator.clipboard.readText();
-                          const selection = editor.getSelection();
-                          if (selection) {
-                            editor.executeEdits('paste', [{
-                              range: selection,
-                              text: text
-                            }]);
-                          }
-                        } catch (err) {
-                          console.log('Paste failed:', err);
-                        }
-                      }
-                    });
-                    
-                    editor.addAction({
-                      id: 'delete-mobile',
-                      label: 'Delete Selected',
-                      contextMenuGroupId: 'navigation',
-                      contextMenuOrder: 4,
-                      run: () => {
-                        const selection = editor.getSelection();
-                        if (selection && !selection.isEmpty()) {
-                          editor.executeEdits('delete', [{
-                            range: selection,
-                            text: ''
-                          }]);
-                        }
-                      }
-                    });
-                    
-                    // Enable better touch selection
-                    editor.updateOptions({
-                      selectOnLineNumbers: true,
-                      selectionHighlight: true,
-                      occurrencesHighlight: true,
-                      renderSelectionHighlight: true,
-                      mouseWheelZoom: false,
-                      multiCursorModifier: 'alt',
-                      wordWrap: 'on',
-                      wrappingIndent: 'indent'
-                    });
-                    
-                    // Force enable text selection on mobile
-                    const viewZone = domNode.querySelector('.view-zones');
-                    const viewLinesElement = domNode.querySelector('.view-lines');
-                    const monacoElement = domNode.querySelector('.monaco-editor');
-                    
-                    [viewZone, viewLinesElement, monacoElement, domNode].forEach(element => {
-                      if (element) {
-                        element.style.webkitUserSelect = 'text';
-                        element.style.userSelect = 'text';
-                        element.style.webkitTouchCallout = 'default';
-                        element.style.touchAction = 'manipulation';
-                      }
-                    });
-                    
-                    // Add touch event listeners for better selection
-                    let touchStartTime = 0;
-                    domNode.addEventListener('touchstart', (e) => {
-                      touchStartTime = Date.now();
-                    }, { passive: true });
-                    
-                    domNode.addEventListener('touchend', (e) => {
-                      const touchDuration = Date.now() - touchStartTime;
-                      if (touchDuration > 500) { // Long press
-                        e.preventDefault();
-                        const touch = e.changedTouches[0];
-                        const position = editor.getPositionAt({
-                          x: touch.clientX,
-                          y: touch.clientY
-                        });
-                        if (position) {
-                          editor.setPosition(position);
-                          editor.focus();
-                        }
-                      }
-                    }, { passive: false });
-                  }
+                  }, 100);
                 }
                 
                 // Register custom completions for each language
@@ -1255,9 +1125,9 @@ const CodeEditor = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Vertical Resize Handle - Mobile and Desktop */}
+        {/* Vertical Resize Handle - Always Visible */}
         <div 
-          className={`w-1 cursor-col-resize hover:bg-blue-500 ${darkMode ? 'bg-dark-border' : 'bg-gray-300'} lg:block hidden sm:block`}
+          className={`w-2 sm:w-1 cursor-col-resize hover:bg-blue-500 ${darkMode ? 'bg-blue-600' : 'bg-blue-400'} touch-none`}
           onMouseDown={(e) => {
             const startX = e.clientX;
             const leftPanel = e.target.previousElementSibling;
@@ -1308,9 +1178,9 @@ const CodeEditor = ({ darkMode }) => {
             />
           </div>
 
-          {/* Horizontal Resize Handle - Mobile and Desktop */}
+          {/* Horizontal Resize Handle - Always Visible */}
           <div 
-            className={`h-1 cursor-row-resize hover:bg-blue-500 ${darkMode ? 'bg-dark-border' : 'bg-gray-300'} lg:block hidden sm:block`}
+            className={`h-2 sm:h-1 cursor-row-resize hover:bg-blue-500 ${darkMode ? 'bg-blue-600' : 'bg-blue-400'} touch-none`}
             onMouseDown={(e) => {
               const startY = e.clientY;
               const topPanel = e.target.previousElementSibling;
