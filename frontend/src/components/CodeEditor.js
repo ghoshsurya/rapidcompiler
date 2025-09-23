@@ -119,6 +119,7 @@ const CodeEditor = ({ darkMode }) => {
   const [currentProjectId, setCurrentProjectId] = useState(null);
   const [editorHeight, setEditorHeight] = useState(60); // percentage
   const [editorWidth, setEditorWidth] = useState(50); // percentage for desktop
+  const [inputOutputHeight, setInputOutputHeight] = useState(50); // percentage for desktop input/output split
   const [isResizing, setIsResizing] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const editorRef = useRef(null);
@@ -781,10 +782,12 @@ const CodeEditor = ({ darkMode }) => {
         </div>
       </div>
 
-      {/* Mobile Resize Instructions */}
-      <div className="sm:hidden px-2 py-1 text-xs text-center bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-        💡 Tip: Long press text to select • Drag resize handles to adjust panels
-      </div>
+      {/* Mobile Instructions */}
+      {!isDesktop && (
+        <div className="px-2 py-1 text-xs text-center bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+          💡 Tip: Long press text to select • Fixed layout for better mobile UX
+        </div>
+      )}
 
       {/* Main Content */}
       <div className={`flex-1 flex ${isDesktop ? 'flex-row' : 'flex-col'}`}>
@@ -795,8 +798,8 @@ const CodeEditor = ({ darkMode }) => {
             width: `${editorWidth}%`,
             minWidth: '300px'
           } : {
-            height: `${editorHeight}%`,
-            minHeight: '200px'
+            height: '50vh',
+            minHeight: '300px'
           }}
         >
           <div className={`border-b ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
@@ -1147,16 +1150,15 @@ const CodeEditor = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Resize Handle */}
-        <div 
-          className={`${isDesktop ? 'w-3 cursor-col-resize' : 'h-3 cursor-row-resize'} flex items-center justify-center group transition-colors ${
-            darkMode ? 'bg-gray-700 hover:bg-blue-600' : 'bg-gray-200 hover:bg-blue-500'
-          } ${isResizing ? 'bg-blue-500' : ''}`}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            setIsResizing(true);
-            
-            if (isDesktop) {
+        {/* Desktop Width Resize Handle */}
+        {isDesktop && (
+          <div 
+            className={`w-3 cursor-col-resize flex items-center justify-center group transition-colors ${
+              darkMode ? 'bg-gray-700 hover:bg-blue-600' : 'bg-gray-200 hover:bg-blue-500'
+            } ${isResizing ? 'bg-blue-500' : ''}`}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setIsResizing(true);
               const startX = e.clientX;
               const container = e.target.parentElement;
               const containerWidth = container.offsetWidth;
@@ -1177,96 +1179,36 @@ const CodeEditor = ({ darkMode }) => {
               
               document.addEventListener('mousemove', handleMouseMove);
               document.addEventListener('mouseup', handleMouseUp);
-            } else {
-              const startY = e.clientY;
-              const container = e.target.parentElement;
-              const containerHeight = container.offsetHeight;
-              const startHeight = editorHeight;
-              
-              const handleMouseMove = (e) => {
-                const deltaY = e.clientY - startY;
-                const deltaPercent = (deltaY / containerHeight) * 100;
-                const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
-                setEditorHeight(newHeight);
-              };
-              
-              const handleMouseUp = () => {
-                setIsResizing(false);
-                document.removeEventListener('mousemove', handleMouseMove);
-                document.removeEventListener('mouseup', handleMouseUp);
-              };
-              
-              document.addEventListener('mousemove', handleMouseMove);
-              document.addEventListener('mouseup', handleMouseUp);
-            }
-          }}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            setIsResizing(true);
-            
-            if (isDesktop) {
-              const startX = e.touches[0].clientX;
-              const container = e.target.parentElement;
-              const containerWidth = container.offsetWidth;
-              const startWidth = editorWidth;
-              
-              const handleTouchMove = (e) => {
-                const deltaX = e.touches[0].clientX - startX;
-                const deltaPercent = (deltaX / containerWidth) * 100;
-                const newWidth = Math.max(20, Math.min(80, startWidth + deltaPercent));
-                setEditorWidth(newWidth);
-              };
-              
-              const handleTouchEnd = () => {
-                setIsResizing(false);
-                document.removeEventListener('touchmove', handleTouchMove);
-                document.removeEventListener('touchend', handleTouchEnd);
-              };
-              
-              document.addEventListener('touchmove', handleTouchMove, { passive: false });
-              document.addEventListener('touchend', handleTouchEnd);
-            } else {
-              const startY = e.touches[0].clientY;
-              const container = e.target.parentElement;
-              const containerHeight = container.offsetHeight;
-              const startHeight = editorHeight;
-              
-              const handleTouchMove = (e) => {
-                const deltaY = e.touches[0].clientY - startY;
-                const deltaPercent = (deltaY / containerHeight) * 100;
-                const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
-                setEditorHeight(newHeight);
-              };
-              
-              const handleTouchEnd = () => {
-                setIsResizing(false);
-                document.removeEventListener('touchmove', handleTouchMove);
-                document.removeEventListener('touchend', handleTouchEnd);
-              };
-              
-              document.addEventListener('touchmove', handleTouchMove, { passive: false });
-              document.addEventListener('touchend', handleTouchEnd);
-            }
-          }}
-        >
-          <div className={`${isDesktop ? 'w-1 h-12' : 'w-12 h-1'} rounded-full transition-colors ${
-            darkMode ? 'bg-gray-500 group-hover:bg-white' : 'bg-gray-400 group-hover:bg-white'
-          } ${isResizing ? 'bg-white' : ''}`} />
-        </div>
+            }}
+          >
+            <div className={`w-1 h-12 rounded-full transition-colors ${
+              darkMode ? 'bg-gray-500 group-hover:bg-white' : 'bg-gray-400 group-hover:bg-white'
+            } ${isResizing ? 'bg-white' : ''}`} />
+          </div>
+        )}
 
         {/* Input/Output Panel */}
         <div 
-          className={`flex flex-col ${isDesktop ? 'border-l' : 'border-t'} ${darkMode ? 'border-dark-border' : 'border-gray-200'}`}
+          className={`flex flex-col ${isDesktop ? 'border-l' : ''} ${darkMode ? 'border-dark-border' : 'border-gray-200'}`}
           style={isDesktop ? {
             width: `${100 - editorWidth}%`,
             minWidth: '300px'
           } : {
-            height: `${100 - editorHeight}%`,
-            minHeight: '150px'
+            height: '50vh',
+            minHeight: '300px'
           }}
         >
           {/* Input Section */}
-          <div className="flex flex-col h-1/2">
+          <div 
+            className="flex flex-col"
+            style={isDesktop ? {
+              height: `${inputOutputHeight}%`,
+              minHeight: '150px'
+            } : {
+              height: '40%',
+              minHeight: '120px'
+            }}
+          >
             <div className={`border-b ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
               <div className="flex items-center space-x-2">
                 <Terminal className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -1285,26 +1227,86 @@ const CodeEditor = ({ darkMode }) => {
             />
           </div>
 
-          {/* Input/Output Divider */}
-          <div className={`h-px ${darkMode ? 'bg-dark-border' : 'bg-gray-200'}`} />
+          {/* Desktop Input/Output Height Resize Handle */}
+          {isDesktop && (
+            <div 
+              className={`h-3 cursor-row-resize flex items-center justify-center group transition-colors ${
+                darkMode ? 'bg-gray-700 hover:bg-blue-600' : 'bg-gray-200 hover:bg-blue-500'
+              } ${isResizing ? 'bg-blue-500' : ''}`}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setIsResizing(true);
+                const startY = e.clientY;
+                const container = e.target.parentElement;
+                const containerHeight = container.offsetHeight;
+                const startHeight = inputOutputHeight;
+                
+                const handleMouseMove = (e) => {
+                  const deltaY = e.clientY - startY;
+                  const deltaPercent = (deltaY / containerHeight) * 100;
+                  const newHeight = Math.max(20, Math.min(80, startHeight + deltaPercent));
+                  setInputOutputHeight(newHeight);
+                };
+                
+                const handleMouseUp = () => {
+                  setIsResizing(false);
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+              }}
+            >
+              <div className={`w-12 h-1 rounded-full transition-colors ${
+                darkMode ? 'bg-gray-500 group-hover:bg-white' : 'bg-gray-400 group-hover:bg-white'
+              } ${isResizing ? 'bg-white' : ''}`} />
+            </div>
+          )}
 
           {/* Output Section */}
-          <div className="flex flex-col h-1/2">
-            <div className={`border-b border-t lg:border-t-0 ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
-              <div className="flex items-center space-x-2">
-                <Terminal className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="text-xs sm:text-sm font-medium">{language === 'web' ? 'Web Preview' : 'Output'}</span>
+          <div 
+            className="flex flex-col"
+            style={isDesktop ? {
+              height: `${100 - inputOutputHeight}%`,
+              minHeight: '150px'
+            } : {
+              height: '60%',
+              minHeight: '180px'
+            }}
+          >
+            <div className={`border-b ${isDesktop ? 'border-t' : ''} ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Terminal className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="text-xs sm:text-sm font-medium">{language === 'web' ? 'Web Preview' : 'Output'}</span>
+                </div>
+                {language === 'web' && webPreview && (
+                  <button
+                    onClick={() => {
+                      const newWindow = window.open('', '_blank');
+                      newWindow.document.write(code);
+                      newWindow.document.close();
+                    }}
+                    className={`px-2 py-1 text-xs rounded ${
+                      darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
+                    title="Open in new tab"
+                  >
+                    Full Preview
+                  </button>
+                )}
               </div>
             </div>
             {language === 'web' && webPreview ? (
               <iframe
                 src={webPreview}
-                className="flex-1 border-0 min-h-48"
+                className={`flex-1 border-0 ${isDesktop ? 'min-h-0' : 'h-full'}`}
                 title="Web Preview"
                 sandbox="allow-scripts"
               />
             ) : (
-              <div className={`flex-1 p-2 sm:p-3 font-mono text-xs sm:text-sm terminal-output overflow-auto min-h-48 ${
+              <div className={`flex-1 p-2 sm:p-3 font-mono text-xs sm:text-sm terminal-output overflow-auto ${isDesktop ? 'min-h-0' : 'h-full'} ${
                 darkMode 
                   ? 'bg-dark-bg text-dark-text' 
                   : 'bg-gray-50 text-gray-900'
