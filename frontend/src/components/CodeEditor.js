@@ -1101,10 +1101,10 @@ const CodeEditor = ({ darkMode }) => {
                     
                     // Force enable text selection on mobile
                     const viewZone = domNode.querySelector('.view-zones');
-                    const viewLines = domNode.querySelector('.view-lines');
-                    const monaco = domNode.querySelector('.monaco-editor');
+                    const viewLinesElement = domNode.querySelector('.view-lines');
+                    const monacoElement = domNode.querySelector('.monaco-editor');
                     
-                    [viewZone, viewLines, monaco, domNode].forEach(element => {
+                    [viewZone, viewLinesElement, monacoElement, domNode].forEach(element => {
                       if (element) {
                         element.style.webkitUserSelect = 'text';
                         element.style.userSelect = 'text';
