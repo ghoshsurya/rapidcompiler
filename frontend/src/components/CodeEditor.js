@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import { Play, Save, Share, Terminal, FileText, Download, Copy, Clipboard, Undo, Redo } from 'lucide-react';
+import { Play, Save, Share, Terminal, FileText, Download, Copy, Clipboard, Undo, Redo, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuth } from '../hooks/useAuth';
 import { debounce } from '../utils/performance';
@@ -783,7 +783,9 @@ const CodeEditor = ({ darkMode }) => {
                 <button
                   onClick={() => {
                     if (editorRef.current) {
-                      editorRef.current.getModel().selectAll();
+                      const model = editorRef.current.getModel();
+                      const fullRange = model.getFullModelRange();
+                      editorRef.current.setSelection(fullRange);
                       editorRef.current.focus();
                     }
                   }}
@@ -795,23 +797,32 @@ const CodeEditor = ({ darkMode }) => {
                   Select All
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (editorRef.current) {
                       const selection = editorRef.current.getSelection();
                       if (selection && !selection.isEmpty()) {
                         const selectedText = editorRef.current.getModel().getValueInRange(selection);
-                        navigator.clipboard.writeText(selectedText).then(() => {
+                        try {
+                          await navigator.clipboard.writeText(selectedText);
                           alert('Copied to clipboard!');
-                        }).catch(() => {
+                        } catch (err) {
                           // Fallback for older browsers
                           const textArea = document.createElement('textarea');
                           textArea.value = selectedText;
+                          textArea.style.position = 'fixed';
+                          textArea.style.left = '-999999px';
+                          textArea.style.top = '-999999px';
                           document.body.appendChild(textArea);
+                          textArea.focus();
                           textArea.select();
-                          document.execCommand('copy');
+                          try {
+                            document.execCommand('copy');
+                            alert('Copied to clipboard!');
+                          } catch (err2) {
+                            alert('Copy failed. Please select text and use Ctrl+C');
+                          }
                           document.body.removeChild(textArea);
-                          alert('Copied to clipboard!');
-                        });
+                        }
                       } else {
                         alert('Please select text first');
                       }
@@ -873,6 +884,28 @@ const CodeEditor = ({ darkMode }) => {
                   title="Redo"
                 >
                   <Redo className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (editorRef.current) {
+                      const selection = editorRef.current.getSelection();
+                      if (selection && !selection.isEmpty()) {
+                        editorRef.current.executeEdits('delete', [{
+                          range: selection,
+                          text: ''
+                        }]);
+                        editorRef.current.focus();
+                      } else {
+                        alert('Please select text first');
+                      }
+                    }
+                  }}
+                  className={`p-1 rounded ${
+                    darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-200 hover:bg-red-300'
+                  }`}
+                  title="Delete Selected"
+                >
+                  <Trash2 className="h-3 w-3" />
                 </button>
               </div>
             </div>
@@ -979,7 +1012,9 @@ const CodeEditor = ({ darkMode }) => {
                       contextMenuGroupId: 'navigation',
                       contextMenuOrder: 1,
                       run: () => {
-                        editor.getModel().selectAll();
+                        const model = editor.getModel();
+                        const fullRange = model.getFullModelRange();
+                        editor.setSelection(fullRange);
                         editor.focus();
                       }
                     });
@@ -989,11 +1024,23 @@ const CodeEditor = ({ darkMode }) => {
                       label: 'Copy',
                       contextMenuGroupId: 'navigation',
                       contextMenuOrder: 2,
-                      run: () => {
+                      run: async () => {
                         const selection = editor.getSelection();
                         if (selection && !selection.isEmpty()) {
                           const selectedText = editor.getModel().getValueInRange(selection);
-                          navigator.clipboard.writeText(selectedText);
+                          try {
+                            await navigator.clipboard.writeText(selectedText);
+                          } catch (err) {
+                            // Fallback
+                            const textArea = document.createElement('textarea');
+                            textArea.value = selectedText;
+                            textArea.style.position = 'fixed';
+                            textArea.style.left = '-999999px';
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                          }
                         }
                       }
                     });
@@ -1015,6 +1062,22 @@ const CodeEditor = ({ darkMode }) => {
                           }
                         } catch (err) {
                           console.log('Paste failed:', err);
+                        }
+                      }
+                    });
+                    
+                    editor.addAction({
+                      id: 'delete-mobile',
+                      label: 'Delete Selected',
+                      contextMenuGroupId: 'navigation',
+                      contextMenuOrder: 4,
+                      run: () => {
+                        const selection = editor.getSelection();
+                        if (selection && !selection.isEmpty()) {
+                          editor.executeEdits('delete', [{
+                            range: selection,
+                            text: ''
+                          }]);
                         }
                       }
                     });
