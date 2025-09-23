@@ -151,19 +151,20 @@
     </style>
     <script>
       // Simple cache busting for updates
-      const APP_VERSION = Date.now().toString();
+      const BUILD_VERSION = '2025-01-27-v1'; // Update this manually on each deploy
       const stored = localStorage.getItem('app-version');
       
-      if (stored && stored !== APP_VERSION) {
-        localStorage.removeItem('app-version');
+      if (stored && stored !== BUILD_VERSION) {
+        localStorage.setItem('app-version', BUILD_VERSION);
         if ('caches' in window) {
           caches.keys().then(names => {
             names.forEach(name => caches.delete(name));
           });
         }
         window.location.reload(true);
+      } else if (!stored) {
+        localStorage.setItem('app-version', BUILD_VERSION);
       }
-      localStorage.setItem('app-version', APP_VERSION);
       
       // Register service worker
       if ('serviceWorker' in navigator) {
