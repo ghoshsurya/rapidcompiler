@@ -768,6 +768,11 @@ const CodeEditor = ({ darkMode }) => {
         </div>
       </div>
 
+      {/* Mobile Resize Instructions */}
+      <div className="sm:hidden px-2 py-1 text-xs text-center bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+        💡 Tip: Long press text to select • Drag resize handles to adjust panels
+      </div>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row">
         {/* Code Editor */}
@@ -1087,8 +1092,48 @@ const CodeEditor = ({ darkMode }) => {
                       selectOnLineNumbers: true,
                       selectionHighlight: true,
                       occurrencesHighlight: true,
-                      renderSelectionHighlight: true
+                      renderSelectionHighlight: true,
+                      mouseWheelZoom: false,
+                      multiCursorModifier: 'alt',
+                      wordWrap: 'on',
+                      wrappingIndent: 'indent'
                     });
+                    
+                    // Force enable text selection on mobile
+                    const viewZone = domNode.querySelector('.view-zones');
+                    const viewLines = domNode.querySelector('.view-lines');
+                    const monaco = domNode.querySelector('.monaco-editor');
+                    
+                    [viewZone, viewLines, monaco, domNode].forEach(element => {
+                      if (element) {
+                        element.style.webkitUserSelect = 'text';
+                        element.style.userSelect = 'text';
+                        element.style.webkitTouchCallout = 'default';
+                        element.style.touchAction = 'manipulation';
+                      }
+                    });
+                    
+                    // Add touch event listeners for better selection
+                    let touchStartTime = 0;
+                    domNode.addEventListener('touchstart', (e) => {
+                      touchStartTime = Date.now();
+                    }, { passive: true });
+                    
+                    domNode.addEventListener('touchend', (e) => {
+                      const touchDuration = Date.now() - touchStartTime;
+                      if (touchDuration > 500) { // Long press
+                        e.preventDefault();
+                        const touch = e.changedTouches[0];
+                        const position = editor.getPositionAt({
+                          x: touch.clientX,
+                          y: touch.clientY
+                        });
+                        if (position) {
+                          editor.setPosition(position);
+                          editor.focus();
+                        }
+                      }
+                    }, { passive: false });
                   }
                 }
                 
@@ -1210,9 +1255,9 @@ const CodeEditor = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Vertical Resize Handle - Hidden on mobile */}
+        {/* Vertical Resize Handle - Mobile and Desktop */}
         <div 
-          className={`hidden lg:block w-1 cursor-col-resize hover:bg-blue-500 ${darkMode ? 'bg-dark-border' : 'bg-gray-300'}`}
+          className={`w-1 cursor-col-resize hover:bg-blue-500 ${darkMode ? 'bg-dark-border' : 'bg-gray-300'} lg:block hidden sm:block`}
           onMouseDown={(e) => {
             const startX = e.clientX;
             const leftPanel = e.target.previousElementSibling;
@@ -1263,9 +1308,9 @@ const CodeEditor = ({ darkMode }) => {
             />
           </div>
 
-          {/* Horizontal Resize Handle - Hidden on mobile */}
+          {/* Horizontal Resize Handle - Mobile and Desktop */}
           <div 
-            className={`hidden lg:block h-1 cursor-row-resize hover:bg-blue-500 ${darkMode ? 'bg-dark-border' : 'bg-gray-300'}`}
+            className={`h-1 cursor-row-resize hover:bg-blue-500 ${darkMode ? 'bg-dark-border' : 'bg-gray-300'} lg:block hidden sm:block`}
             onMouseDown={(e) => {
               const startY = e.clientY;
               const topPanel = e.target.previousElementSibling;

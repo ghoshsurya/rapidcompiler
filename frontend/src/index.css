@@ -80,6 +80,48 @@ body {
     background-color: #007acc !important;
     color: white !important;
   }
+  
+  /* Enhanced mobile text selection */
+  .monaco-editor .view-line {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    user-select: text !important;
+    -webkit-touch-callout: default !important;
+    pointer-events: auto !important;
+  }
+  
+  .monaco-editor .view-lines .view-line span {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    user-select: text !important;
+    -webkit-touch-callout: default !important;
+  }
+  
+  /* Mobile selection handles */
+  .monaco-editor .cursors-layer .cursor {
+    background: #007acc !important;
+    width: 3px !important;
+  }
+  
+  /* Better touch targets for resize handles */
+  .cursor-col-resize, .cursor-row-resize {
+    min-width: 20px !important;
+    min-height: 20px !important;
+    touch-action: none !important;
+  }
+  
+  /* Mobile resize handle visibility */
+  @media (max-width: 640px) {
+    .cursor-col-resize {
+      width: 8px !important;
+      background: #007acc !important;
+    }
+    
+    .cursor-row-resize {
+      height: 8px !important;
+      background: #007acc !important;
+    }
+  }
 }
 
 .monaco-editor {
