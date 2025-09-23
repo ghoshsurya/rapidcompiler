@@ -785,7 +785,7 @@ const CodeEditor = ({ darkMode }) => {
       {/* Mobile Instructions */}
       {!isDesktop && (
         <div className="px-2 py-1 text-xs text-center bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-          💡 Tip: Long press text to select • Fixed layout for better mobile UX
+          💡 Tip: Long press text to select • scroll down to see output
         </div>
       )}
 
