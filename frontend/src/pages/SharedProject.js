@@ -40,10 +40,10 @@ const SharedProject = ({ darkMode }) => {
 
   const runCode = async () => {
     if (!project) return;
-    
+
     setIsRunning(true);
-    setOutput('Running...');
-    
+    setOutput('⏳ Running...');
+
     try {
       const response = await fetch('/.netlify/functions/run', {
         method: 'POST',
@@ -51,18 +51,27 @@ const SharedProject = ({ darkMode }) => {
         body: JSON.stringify({
           language: project.language,
           code: project.code,
-          input
-        })
+          input,
+        }),
       });
+
+      if (!response.ok) {
+        const text = await response.text();
+        setOutput(`❌ Server error (${response.status}): ${text}`);
+        return;
+      }
+
       const data = await response.json();
-      
-      if (data.error) {
-        setOutput(`Error: ${data.error}`);
+
+      if (data.error && data.output) {
+        setOutput(`${data.output}\n\n⚠️ Stderr:\n${data.error}`);
+      } else if (data.error) {
+        setOutput(`❌ ${data.error}`);
       } else {
-        setOutput(data.output || 'Program executed successfully (no output)');
+        setOutput(data.output || '✅ Program executed successfully (no output)');
       }
     } catch (error) {
-      setOutput(`Error: ${error.message || 'Failed to execute code'}`);
+      setOutput(`❌ Failed to run code: ${error.message}`);
     } finally {
       setIsRunning(false);
     }
@@ -167,9 +176,9 @@ const SharedProject = ({ darkMode }) => {
             <div className={`border-b border-t ${darkMode ? 'border-dark-border' : 'border-gray-200'} p-2`}>
               <span className="text-sm font-medium">Output</span>
             </div>
-            <div className={`flex-1 p-3 font-mono text-sm terminal-output overflow-auto ${
-              darkMode 
-                ? 'bg-dark-bg text-dark-text' 
+            <div className={`flex-1 p-3 font-mono text-sm terminal-output overflow-auto whitespace-pre-wrap ${
+              darkMode
+                ? 'bg-dark-bg text-dark-text'
                 : 'bg-gray-50 text-gray-900'
             }`}>
               {output || 'Output will appear here...'}

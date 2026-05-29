@@ -176,366 +176,8 @@ const CodeEditor = ({ darkMode }) => {
     []
   );
 
-  const executeTypeScript = async () => {
-    try {
-      // Load TypeScript compiler from CDN
-      if (!window.ts) {
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/typescript@latest/lib/typescript.js';
-        document.head.appendChild(script);
-        
-        await new Promise((resolve) => {
-          script.onload = resolve;
-        });
-      }
-      
-      // Compile TypeScript to JavaScript
-      const jsCode = window.ts.transpile(code, {
-        target: window.ts.ScriptTarget.ES2020,
-        module: window.ts.ModuleKind.CommonJS,
-        strict: false
-      });
-      
-      // Execute JavaScript with full support
-      return await executeJavaScript(jsCode);
-    } catch (error) {
-      return `TypeScript Error: ${error.message}`;
-    }
-  };
-
-  const executeJavaScript = async (jsCode) => {
-    return new Promise((resolve) => {
-      let output = '';
-      let hasError = false;
-
-      // Create a safe execution environment
-      const originalConsole = { ...console };
-      const inputLines = input.split('\n');
-      let inputIndex = 0;
-
-      // Mock console and input functions
-      const mockConsole = {
-        log: (...args) => { output += args.join(' ') + '\n'; },
-        error: (...args) => { output += 'Error: ' + args.join(' ') + '\n'; },
-        warn: (...args) => { output += 'Warning: ' + args.join(' ') + '\n'; }
-      };
-
-      const mockPrompt = (message) => {
-        if (inputIndex < inputLines.length) {
-          return inputLines[inputIndex++];
-        }
-        return '';
-      };
-
-      // Replace global objects
-      const originalPrompt = window.prompt;
-      window.console = mockConsole;
-      window.prompt = mockPrompt;
-
-      try {
-        // Execute code with timeout
-        const timeoutId = setTimeout(() => {
-          hasError = true;
-          resolve('Execution timeout (5 seconds)');
-        }, 5000);
-
-        // Execute the code
-        eval(jsCode);
-
-        clearTimeout(timeoutId);
-        
-        if (!hasError) {
-          resolve(output || 'Program executed successfully');
-        }
-      } catch (error) {
-        resolve(`Runtime Error: ${error.message}`);
-      } finally {
-        // Restore original objects
-        window.console = originalConsole;
-        window.prompt = originalPrompt;
-      }
-    });
-  };
-
-  const executeGoAdvanced = async () => {
-    try {
-      // Try Go Playground API first
-      try {
-        const response = await fetch('https://play.golang.org/compile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `version=2&body=${encodeURIComponent(code)}&withVet=true`
-        });
-        const result = await response.json();
-        if (result.Events && result.Events[0]) {
-          return result.Events[0].Message || 'Program executed successfully';
-        }
-        if (result.Errors) {
-          return `Error: ${result.Errors}`;
-        }
-      } catch (apiError) {
-        // Fallback to advanced parsing
-      }
-      
-      // Advanced Go interpreter
-      let output = '';
-      const lines = code.split('\n');
-      const variables = {};
-      let inMain = false;
-      
-      for (const line of lines) {
-        const trimmed = line.trim();
-        
-        if (trimmed.includes('func main()')) {
-          inMain = true;
-          continue;
-        }
-        
-        if (!inMain) continue;
-        
-        // Variable declarations
-        const varMatch = trimmed.match(/(var\s+(\w+)\s*=\s*(.+))|(\w+)\s*:=\s*(.+)/);
-        if (varMatch) {
-          const varName = varMatch[2] || varMatch[4];
-          const value = varMatch[3] || varMatch[5];
-          try {
-            variables[varName] = eval(value.replace(/"/g, '"').replace(/`/g, '"'));
-          } catch {
-            variables[varName] = value.replace(/["'`]/g, '');
-          }
-        }
-        
-        // For loops
-        const forMatch = trimmed.match(/for\s+(\w+)\s*:=\s*(\d+);\s*\w+\s*<\s*(\d+);\s*\w+\+\+/);
-        if (forMatch) {
-          const [, varName, start, end] = forMatch;
-          for (let i = parseInt(start); i < parseInt(end); i++) {
-            variables[varName] = i;
-          }
-        }
-        
-        // Print statements
-        const printMatch = trimmed.match(/fmt\.Print(?:ln)?\(([^)]+)\)/);
-        if (printMatch) {
-          let content = printMatch[1];
-          
-          // Handle variables
-          if (variables[content]) {
-            output += variables[content] + '\n';
-          } else {
-            // Handle string literals
-            content = content.replace(/["'`]/g, '');
-            output += content + '\n';
-          }
-        }
-      }
-      
-      if (!code.includes('package main')) {
-        return 'Error: Go programs must start with "package main"';
-      }
-      
-      return output || 'Program executed successfully';
-    } catch (error) {
-      return `Error: ${error.message}`;
-    }
-  };
-
-  const executeRustAdvanced = async () => {
-    try {
-      // Advanced Rust interpreter
-      let output = '';
-      const lines = code.split('\n');
-      const variables = {};
-      let inMain = false;
-      
-      for (const line of lines) {
-        const trimmed = line.trim();
-        
-        if (trimmed.includes('fn main()')) {
-          inMain = true;
-          continue;
-        }
-        
-        if (!inMain) continue;
-        
-        // Variable declarations: let x = value;
-        const varMatch = trimmed.match(/let\s+(mut\s+)?(\w+)\s*=\s*([^;]+);/);
-        if (varMatch) {
-          const varName = varMatch[2];
-          const value = varMatch[3];
-          try {
-            variables[varName] = eval(value.replace(/"/g, '"'));
-          } catch {
-            variables[varName] = value.replace(/"/g, '');
-          }
-        }
-        
-        // For loops: for i in 0..n
-        const forMatch = trimmed.match(/for\s+(\w+)\s+in\s+(\d+)\.\.(\d+)/);
-        if (forMatch) {
-          const [, varName, start, end] = forMatch;
-          for (let i = parseInt(start); i < parseInt(end); i++) {
-            variables[varName] = i;
-          }
-        }
-        
-        // println! with formatting: println!("{}", variable);
-        const printVarMatch = trimmed.match(/println!\("([^"]*)",\s*([^)]+)\)/);
-        if (printVarMatch) {
-          const [, format, varExpr] = printVarMatch;
-          let value = variables[varExpr] || varExpr;
-          
-          // Handle expressions like i * 2
-          if (varExpr.includes('*') || varExpr.includes('+') || varExpr.includes('-')) {
-            try {
-              const expr = varExpr.replace(/(\w+)/g, (match) => variables[match] || match);
-              value = eval(expr);
-            } catch {}
-          }
-          
-          output += format.replace('{}', value) + '\n';
-          continue;
-        }
-        
-        // Simple println!: println!("text");
-        const printMatch = trimmed.match(/println!\(["']([^"']+)["']\)/);
-        if (printMatch) {
-          output += printMatch[1] + '\n';
-        }
-      }
-      
-      if (!code.includes('fn main()')) {
-        return 'Error: Rust programs must have a "fn main()" function';
-      }
-      
-      return output || 'Program executed successfully';
-    } catch (error) {
-      return `Error: ${error.message}`;
-    }
-  };
-
-  const executeSwiftAdvanced = async () => {
-    try {
-      let output = '';
-      const lines = code.split('\n');
-      const variables = {};
-      
-      for (const line of lines) {
-        const trimmed = line.trim();
-        
-        // Variable declarations: let/var name = value
-        const varMatch = trimmed.match(/(let|var)\s+(\w+)\s*=\s*(.+)/);
-        if (varMatch) {
-          const [, , varName, value] = varMatch;
-          try {
-            variables[varName] = eval(value.replace(/"/g, '"'));
-          } catch {
-            variables[varName] = value.replace(/"/g, '');
-          }
-        }
-        
-        // For loops: for i in 0..<n
-        const forMatch = trimmed.match(/for\s+(\w+)\s+in\s+(\d+)\.\.<?\s*(\d+)/);
-        if (forMatch) {
-          const [, varName, start, end] = forMatch;
-          const endVal = trimmed.includes('..<') ? parseInt(end) : parseInt(end) + 1;
-          for (let i = parseInt(start); i < endVal; i++) {
-            variables[varName] = i;
-          }
-        }
-        
-        // String interpolation: print("Hello \(name)")
-        if (trimmed.includes('\\(') && trimmed.includes('print(')) {
-          let text = trimmed.match(/print\("([^"]+)"/)?.[1] || '';
-          text = text.replace(/\\\((\w+)\)/g, (match, varName) => {
-            return variables[varName] || varName;
-          });
-          output += text + '\n';
-          continue;
-        }
-        
-        // print with variables: print(variable)
-        const printVarMatch = trimmed.match(/print\((\w+)\)/);
-        if (printVarMatch && !trimmed.includes('"')) {
-          const varName = printVarMatch[1];
-          output += (variables[varName] || varName) + '\n';
-          continue;
-        }
-        
-        // Simple print: print("text")
-        const printMatch = trimmed.match(/print\(["']([^"']+)["']\)/);
-        if (printMatch) {
-          output += printMatch[1] + '\n';
-        }
-      }
-      
-      return output || 'Program executed successfully';
-    } catch (error) {
-      return `Error: ${error.message}`;
-    }
-  };
-
-  const executeRubyAdvanced = async () => {
-    try {
-      let output = '';
-      const lines = code.split('\n');
-      const variables = {};
-      
-      for (const line of lines) {
-        const trimmed = line.trim();
-        
-        // Variable assignments: name = value
-        const varMatch = trimmed.match(/(\w+)\s*=\s*(.+)/);
-        if (varMatch && !trimmed.includes('puts') && !trimmed.includes('print')) {
-          const [, varName, value] = varMatch;
-          try {
-            variables[varName] = eval(value.replace(/"/g, '"'));
-          } catch {
-            variables[varName] = value.replace(/["']/g, '');
-          }
-        }
-        
-        // For loops: for i in 1..5 or (1..5).each
-        const forMatch = trimmed.match(/(?:for\s+(\w+)\s+in\s+(\d+)\.\.(\d+))|(?:\((\d+)\.\.(\d+)\)\.each)/);
-        if (forMatch) {
-          const varName = forMatch[1] || 'i';
-          const start = parseInt(forMatch[2] || forMatch[4]);
-          const end = parseInt(forMatch[3] || forMatch[5]);
-          for (let i = start; i <= end; i++) {
-            variables[varName] = i;
-          }
-        }
-        
-        // String interpolation: puts "Hello #{name}"
-        if (trimmed.includes('#{') && trimmed.includes('puts')) {
-          let text = trimmed.match(/puts\s+"([^"]+)"/)?.[1] || '';
-          text = text.replace(/#\{(\w+)\}/g, (match, varName) => {
-            return variables[varName] || varName;
-          });
-          output += text + '\n';
-          continue;
-        }
-        
-        // puts with variables: puts variable
-        const putsVarMatch = trimmed.match(/puts\s+(\w+)$/);
-        if (putsVarMatch) {
-          const varName = putsVarMatch[1];
-          output += (variables[varName] || varName) + '\n';
-          continue;
-        }
-        
-        // Simple puts: puts "text"
-        const putsMatch = trimmed.match(/puts\s+["']([^"']+)["']/);
-        if (putsMatch) {
-          output += putsMatch[1] + '\n';
-        }
-      }
-      
-      return output || 'Program executed successfully';
-    } catch (error) {
-      return `Error: ${error.message}`;
-    }
-  };
+  // All languages are executed via the Piston API through the Netlify function.
+  // No client-side interpreters — they were unreliable and only handled trivial programs.
 
   const downloadCode = () => {
     const extensions = {
@@ -569,79 +211,42 @@ const CodeEditor = ({ darkMode }) => {
 
   const runCode = async () => {
     setIsRunning(true);
-    setOutput('Running...');
-    
+    setOutput('⏳ Running...');
+    setWebPreview('');
+
     try {
-      // Handle TypeScript execution client-side
-      if (language === 'typescript') {
-        const result = await executeTypeScript();
-        setOutput(result);
-        setWebPreview('');
-        setIsRunning(false);
-        return;
-      }
-      
-      // Handle Go execution client-side
-      if (language === 'go') {
-        const result = await executeGoAdvanced();
-        setOutput(result);
-        setWebPreview('');
-        setIsRunning(false);
-        return;
-      }
-      
-      // Handle Rust execution client-side
-      if (language === 'rust') {
-        const result = await executeRustAdvanced();
-        setOutput(result);
-        setWebPreview('');
-        setIsRunning(false);
-        return;
-      }
-      
-      // Handle Swift execution client-side
-      if (language === 'swift') {
-        const result = await executeSwiftAdvanced();
-        setOutput(result);
-        setWebPreview('');
-        setIsRunning(false);
-        return;
-      }
-      
-      // Handle Ruby execution client-side
-      if (language === 'ruby') {
-        const result = await executeRubyAdvanced();
-        setOutput(result);
-        setWebPreview('');
-        setIsRunning(false);
-        return;
-      }
-      
-      // Handle web preview locally
+      // HTML/CSS/JS — render in iframe, no server needed
       if (language === 'web') {
-        setOutput('Web page rendered successfully!');
+        setOutput('✅ Web page rendered successfully!');
         setWebPreview(`data:text/html;charset=utf-8,${encodeURIComponent(code)}`);
-        setIsRunning(false);
         return;
       }
-      
-      // Backend execution for other languages
+
+      // All other languages go through the Piston API via the Netlify function
       const response = await fetch('/.netlify/functions/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ language, code, input })
+        body: JSON.stringify({ language, code, input }),
       });
+
+      if (!response.ok) {
+        const text = await response.text();
+        setOutput(`❌ Server error (${response.status}): ${text}`);
+        return;
+      }
+
       const data = await response.json();
-      
-      if (data.error) {
-        setOutput(`Error: ${data.error}`);
-        setWebPreview('');
+
+      // Show stderr (compile/runtime errors) prominently, but still show any stdout
+      if (data.error && data.output) {
+        setOutput(`${data.output}\n\n⚠️ Stderr:\n${data.error}`);
+      } else if (data.error) {
+        setOutput(`❌ ${data.error}`);
       } else {
-        setOutput(data.output || 'Program executed successfully (no output)');
-        setWebPreview('');
+        setOutput(data.output || '✅ Program executed successfully (no output)');
       }
     } catch (error) {
-      setOutput(`Error: ${error.message || 'Failed to execute code'}`);
+      setOutput(`❌ Failed to run code: ${error.message}`);
     } finally {
       setIsRunning(false);
     }
@@ -1306,7 +911,7 @@ const CodeEditor = ({ darkMode }) => {
                 sandbox="allow-scripts"
               />
             ) : (
-              <div className={`flex-1 p-2 sm:p-3 font-mono text-xs sm:text-sm terminal-output overflow-auto ${isDesktop ? 'min-h-0' : 'h-full'} ${
+              <div className={`flex-1 p-2 sm:p-3 font-mono text-xs sm:text-sm terminal-output overflow-auto whitespace-pre-wrap ${isDesktop ? 'min-h-0' : 'h-full'} ${
                 darkMode 
                   ? 'bg-dark-bg text-dark-text' 
                   : 'bg-gray-50 text-gray-900'
