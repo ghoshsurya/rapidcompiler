@@ -1,27 +1,72 @@
 {
-  "short_name": "Codesplex",
-  "name": "Codesplex - Online Code Editor & Compiler",
-  "description": "Professional online code editor and compiler with 14+ programming languages, real-time execution, and project sharing.",
+  "short_name": "RapidCompiler",
+  "name": "RapidCompiler – Free Online Code Editor & Compiler",
+  "description": "Write, compile and run code in 14 languages instantly in your browser. Python, JavaScript, C++, Java, Go, Rust, Swift, Ruby, PHP, SQL, HTML and more. Free, no installation needed.",
   "icons": [
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/x-icon",
+      "purpose": "any"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "theme_color": "#2563eb",
   "background_color": "#ffffff",
-  "categories": ["developer", "productivity", "education"]
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["developer", "productivity", "education", "utilities"],
+  "screenshots": [
+    {
+      "src": "logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "label": "RapidCompiler Code Editor"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Python Editor",
+      "short_name": "Python",
+      "description": "Open Python online compiler",
+      "url": "/?lang=python",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "JavaScript Editor",
+      "short_name": "JavaScript",
+      "description": "Open JavaScript online editor",
+      "url": "/?lang=javascript",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "C++ Compiler",
+      "short_name": "C++",
+      "description": "Open C++ online compiler",
+      "url": "/?lang=cpp",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Projects",
+      "short_name": "Projects",
+      "description": "View saved projects",
+      "url": "/projects",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
 }

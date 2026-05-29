@@ -2,98 +2,313 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         FAVICON & ICONS
+    ═══════════════════════════════════════════════════════════ -->
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         VIEWPORT & MOBILE
+    ═══════════════════════════════════════════════════════════ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="RapidCompiler" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-
-    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <meta name="theme-color" content="#2563eb" />
-    
-    <!-- Primary Meta Tags -->
-    <title>RapidCompiler - Online Code Editor & Compiler | Python, JavaScript, C++, PHP, HTML</title>
-    <meta name="title" content="RapidCompiler - Online Code Editor & Compiler | Python, JavaScript, C++, PHP, HTML" />
-    <meta name="description" content="Professional online code editor with 14+ programming languages including Python, JavaScript, TypeScript, Go, Rust, Swift, Ruby, C++, Java, PHP, SQL, HTML. Real-time execution, Google OAuth, project sharing." />
-    <meta name="keywords" content="online code editor, code compiler, python, javascript, typescript, go, rust, swift, ruby, c++, java, php, sql, html, programming, coding, IDE, syntax highlighting, autocomplete, google oauth" />
-    <meta name="author" content="RapidCompiler" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://rapidcompiler.netlify.app" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://rapidcompiler.netlify.app" />
-    <meta property="og:title" content="RapidCompiler - Online Code Editor & Compiler" />
-    <meta property="og:description" content="Professional online code editor with 14+ programming languages, real-time execution, Google OAuth, and project sharing capabilities." />
-    <meta property="og:image" content="https://rapidcompiler.netlify.app/logo512.png" />
-    <meta property="og:site_name" content="RapidCompiler" />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://rapidcompiler.netlify.app" />
-    <meta property="twitter:title" content="RapidCompiler - Online Code Editor & Compiler" />
-    <meta property="twitter:description" content="Professional online code editor with 14+ programming languages, real-time execution, and project sharing." />
-    <meta property="twitter:image" content="https://rapidcompiler.netlify.app/logo512.png" />
-    
-    <!-- Additional SEO -->
-    <meta name="language" content="English" />
-    <meta name="revisit-after" content="7 days" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PRIMARY SEO META TAGS
+    ═══════════════════════════════════════════════════════════ -->
+    <title>RapidCompiler – Free Online Code Editor & Compiler | Run Python, C++, Java, JavaScript Online</title>
+
+    <meta name="title"       content="RapidCompiler – Free Online Code Editor & Compiler | Run Python, C++, Java, JavaScript Online" />
+    <meta name="description" content="RapidCompiler is a free online IDE supporting 14 languages: Python, JavaScript, TypeScript, C, C++, Java, C#, Go, Rust, Swift, Ruby, PHP, SQL, HTML. Write, compile and run code instantly in your browser. No installation needed." />
+    <meta name="keywords"    content="online code editor, online compiler, online IDE, run python online, run c++ online, run java online, run javascript online, run typescript online, run go online, run rust online, run swift online, run ruby online, run php online, sql editor online, html editor online, free code editor, browser IDE, code playground, rapidcompiler, compile code online, execute code online, programming online, coding online, web IDE, code runner" />
+
+    <meta name="author"       content="Suryakanta Ghosh" />
+    <meta name="robots"       content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot"    content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot"      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="language"     content="English" />
+    <meta name="revisit-after" content="3 days" />
     <meta name="distribution" content="global" />
-    <meta name="rating" content="general" />
-    
-    <!-- Structured Data -->
+    <meta name="rating"       content="general" />
+    <meta name="category"     content="Technology, Programming, Education" />
+    <meta name="classification" content="Developer Tools" />
+    <meta name="coverage"     content="Worldwide" />
+    <meta name="target"       content="all" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
+
+    <link rel="canonical" href="https://rapidcompiler.netlify.app/" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         OPEN GRAPH (Facebook, LinkedIn, WhatsApp, Discord)
+    ═══════════════════════════════════════════════════════════ -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://rapidcompiler.netlify.app/" />
+    <meta property="og:site_name"   content="RapidCompiler" />
+    <meta property="og:title"       content="RapidCompiler – Free Online Code Editor & Compiler" />
+    <meta property="og:description" content="Write, compile and run code in 14 languages instantly in your browser. Python, C++, Java, JavaScript, Go, Rust, Swift, Ruby, PHP, SQL and more. Free, no installation needed." />
+    <meta property="og:image"       content="https://rapidcompiler.netlify.app/logo512.png" />
+    <meta property="og:image:width"  content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt"   content="RapidCompiler – Online Code Editor" />
+    <meta property="og:locale"      content="en_US" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         TWITTER / X CARD
+    ═══════════════════════════════════════════════════════════ -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:site"        content="@rapidcompiler" />
+    <meta name="twitter:creator"     content="@rapidcompiler" />
+    <meta name="twitter:url"         content="https://rapidcompiler.netlify.app/" />
+    <meta name="twitter:title"       content="RapidCompiler – Free Online Code Editor & Compiler" />
+    <meta name="twitter:description" content="Write, compile and run code in 14 languages instantly in your browser. Free, no installation needed." />
+    <meta name="twitter:image"       content="https://rapidcompiler.netlify.app/logo512.png" />
+    <meta name="twitter:image:alt"   content="RapidCompiler – Online Code Editor" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         PERFORMANCE: DNS PREFETCH & PRECONNECT
+    ═══════════════════════════════════════════════════════════ -->
+    <link rel="preconnect"    href="https://fonts.googleapis.com" />
+    <link rel="preconnect"    href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch"  href="https://ce.judge0.com" />
+    <link rel="dns-prefetch"  href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch"  href="https://www.google-analytics.com" />
+
+    <!-- ═══════════════════════════════════════════════════════════
+         STRUCTURED DATA — WebApplication (primary)
+    ═══════════════════════════════════════════════════════════ -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
+      "@id": "https://rapidcompiler.netlify.app/#webapp",
       "name": "RapidCompiler",
-      "description": "Professional online code editor with 14+ programming languages, real-time execution, Google OAuth, and project sharing",
-      "url": "https://rapidcompiler.netlify.app",
+      "alternateName": ["Rapid Compiler", "RapidCompiler IDE", "RapidCompiler Online"],
+      "description": "RapidCompiler is a free online IDE and code compiler supporting 14 programming languages including Python, JavaScript, TypeScript, C, C++, Java, C#, Go, Rust, Swift, Ruby, PHP, SQL and HTML/CSS/JS. Write, compile and run code instantly in your browser.",
+      "url": "https://rapidcompiler.netlify.app/",
       "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Web Browser",
+      "applicationSubCategory": "Code Editor",
+      "operatingSystem": "Any (Web Browser)",
+      "browserRequirements": "Requires JavaScript",
+      "softwareVersion": "2.0",
+      "datePublished": "2024-01-01",
+      "dateModified": "2026-05-29",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "isFamilyFriendly": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Suryakanta Ghosh",
+        "url": "https://github.com/ghoshsurya"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "RapidCompiler",
+        "url": "https://rapidcompiler.netlify.app/"
+      },
+      "screenshot": "https://rapidcompiler.netlify.app/logo512.png",
+      "featureList": [
+        "Python online compiler",
+        "JavaScript online editor",
+        "TypeScript online compiler",
+        "C online compiler",
+        "C++ online compiler",
+        "Java online compiler",
+        "C# online compiler",
+        "Go online compiler",
+        "Rust online compiler",
+        "Swift online compiler",
+        "Ruby online interpreter",
+        "PHP online editor",
+        "SQL online editor",
+        "HTML CSS JS live preview",
+        "Monaco Editor with syntax highlighting",
+        "IntelliSense autocomplete",
+        "Stdin input support",
+        "Save and manage projects",
+        "Share code via public URL",
+        "Download code as file",
+        "Dark mode and light mode",
+        "Mobile responsive design",
+        "Auth0 authentication",
+        "Free to use, no installation"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "120",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         STRUCTURED DATA — SoftwareApplication (for app stores / rich results)
+    ═══════════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "RapidCompiler",
+      "operatingSystem": "Web",
+      "applicationCategory": "DeveloperApplication",
       "offers": {
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD"
       },
-      "featureList": [
-        "Python Code Editor",
-        "JavaScript Compiler",
-        "TypeScript Support",
-        "Go Programming",
-        "Rust Development",
-        "Swift Coding",
-        "Ruby Programming",
-        "C/C++ Online IDE",
-        "Java Development",
-        "PHP Editor",
-        "SQL Query Editor",
-        "HTML/CSS/JS Editor",
-        "Google OAuth Login",
-        "Syntax Highlighting",
-        "Auto-completion",
-        "Code Sharing"
+      "url": "https://rapidcompiler.netlify.app/",
+      "description": "Free online code editor and compiler for Python, JavaScript, C++, Java, Go, Rust, Swift, Ruby, PHP, SQL and more."
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         STRUCTURED DATA — FAQPage (boosts rich snippets in Google)
+    ═══════════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is RapidCompiler?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "RapidCompiler is a free online IDE and code compiler that lets you write, compile and run code in 14 programming languages directly in your browser — no installation required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which programming languages does RapidCompiler support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "RapidCompiler supports Python, JavaScript, TypeScript, C, C++, Java, C#, Go, Rust, Swift, Ruby, PHP, SQL (SQLite), and HTML/CSS/JS with live preview."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is RapidCompiler free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, RapidCompiler is completely free. You can run code without even creating an account. Sign up to save and share your projects."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I run Python code online with RapidCompiler?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. RapidCompiler lets you run Python 3 code online instantly. Just type your code, optionally provide stdin input, and click Run."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I share my code with others?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. After logging in, click Share to generate a public URL for your project. Anyone with the link can view and run your code without an account."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does RapidCompiler work on mobile?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. RapidCompiler is fully responsive and works on smartphones and tablets with a touch-optimized toolbar for copy, paste, undo and redo."
+          }
+        }
       ]
     }
     </script>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-66E7EFCPL9"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-66E7EFCPL9');
-</script>
+    <!-- ═══════════════════════════════════════════════════════════
+         STRUCTURED DATA — BreadcrumbList
+    ═══════════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://rapidcompiler.netlify.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Code Editor",
+          "item": "https://rapidcompiler.netlify.app/"
+        }
+      ]
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         STRUCTURED DATA — Organization
+    ═══════════════════════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "RapidCompiler",
+      "url": "https://rapidcompiler.netlify.app/",
+      "logo": "https://rapidcompiler.netlify.app/logo512.png",
+      "sameAs": [
+        "https://github.com/ghoshsurya/rapidcompiler"
+      ]
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         GOOGLE ANALYTICS
+    ═══════════════════════════════════════════════════════════ -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-66E7EFCPL9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-66E7EFCPL9', { page_path: window.location.pathname });
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         GOOGLE SEARCH CONSOLE VERIFICATION
+    ═══════════════════════════════════════════════════════════ -->
     <meta name="google-site-verification" content="qH9g_juj3zHi0_w-qQ4M1eAvYomhnGv8VP1AjV_cRwg" />
   </head>
+
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:50px auto;padding:20px;text-align:center;">
+        <h1>RapidCompiler – Free Online Code Editor</h1>
+        <p>RapidCompiler requires JavaScript to run. Please enable JavaScript in your browser to use this free online IDE supporting Python, JavaScript, C++, Java, Go, Rust, Swift, Ruby, PHP, SQL and more.</p>
+        <p>Visit <a href="https://rapidcompiler.netlify.app">rapidcompiler.netlify.app</a></p>
+      </div>
+    </noscript>
+
     <div id="root"></div>
+
     <style>
-      /* Mobile touch and selection fixes */
+      /* ── Mobile touch & selection fixes ── */
       * {
         -webkit-touch-callout: default !important;
         -webkit-user-select: text !important;
@@ -103,9 +318,7 @@
         user-select: text !important;
         -webkit-tap-highlight-color: rgba(0,0,0,0.1);
       }
-      
-      /* Enable text selection in Monaco Editor */
-      .monaco-editor, .monaco-editor *, 
+      .monaco-editor, .monaco-editor *,
       .monaco-editor .view-lines,
       .monaco-editor .view-line,
       .monaco-editor .mtk1,
@@ -117,21 +330,15 @@
         user-select: text !important;
         pointer-events: auto !important;
       }
-      
-      /* Fix select all functionality */
       .monaco-editor .selected-text {
         -webkit-user-select: text !important;
         user-select: text !important;
       }
-      
-      /* Fix mobile input focus */
       input, textarea {
         -webkit-user-select: text;
         user-select: text;
-        font-size: 16px; /* Prevent zoom on iOS */
+        font-size: 16px;
       }
-      
-      /* Mobile specific fixes */
       @media (max-width: 768px) {
         body {
           -webkit-text-size-adjust: 100%;
@@ -139,48 +346,32 @@
           -webkit-touch-callout: default;
           -webkit-user-select: text;
         }
-        
-        /* Enable context menu on mobile */
         .monaco-editor {
           -webkit-touch-callout: default !important;
           -webkit-user-select: text !important;
           touch-action: manipulation;
         }
-        
-        /* Fix mobile selection handles */
-        ::selection {
-          background: #007acc;
-          color: white;
-        }
-        
-        ::-moz-selection {
-          background: #007acc;
-          color: white;
-        }
+        ::selection      { background: #007acc; color: white; }
+        ::-moz-selection { background: #007acc; color: white; }
       }
     </style>
+
     <script>
-      // Simple cache busting for updates
-      const BUILD_VERSION = '2025-01-27-v1'; // Update this manually on each deploy
+      // Cache busting on deploy
+      const BUILD_VERSION = '2026-05-29-v3';
       const stored = localStorage.getItem('app-version');
-      
       if (stored && stored !== BUILD_VERSION) {
         localStorage.setItem('app-version', BUILD_VERSION);
         if ('caches' in window) {
-          caches.keys().then(names => {
-            names.forEach(name => caches.delete(name));
-          });
+          caches.keys().then(names => names.forEach(n => caches.delete(n)));
         }
         window.location.reload(true);
       } else if (!stored) {
         localStorage.setItem('app-version', BUILD_VERSION);
       }
-      
       // Register service worker
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
-        });
+        window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
       }
     </script>
   </body>

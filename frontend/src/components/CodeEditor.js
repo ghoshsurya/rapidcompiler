@@ -124,11 +124,20 @@ const CodeEditor = ({ darkMode }) => {
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
   const editorRef = useRef(null);
 
-  // Load project if project ID is in URL
+  // Load project OR pre-select language from URL params
+  // ?project=<id>  → load saved project
+  // ?lang=python   → pre-select language (used by sitemap SEO URLs)
   useEffect(() => {
     const projectId = searchParams.get('project');
+    const langParam = searchParams.get('lang');
+
     if (projectId && user) {
       loadProject(projectId);
+    } else if (langParam && LANGUAGE_TEMPLATES[langParam]) {
+      setLanguage(langParam);
+      setCode(LANGUAGE_TEMPLATES[langParam]);
+      setOutput('');
+      setWebPreview('');
     }
   }, [searchParams, user]);
 

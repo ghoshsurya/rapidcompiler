@@ -1,2 +1,46 @@
+# ═══════════════════════════════════════════════════════════
+# Netlify _headers — RapidCompiler
+# Security + performance headers (Google uses these as ranking signals)
+# ═══════════════════════════════════════════════════════════
+
+# ── All pages ───────────────────────────────────────────────
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://unpkg.com https://*.auth0.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://ce.judge0.com https://*.auth0.com https://*.neon.tech wss://*.auth0.com https://www.google-analytics.com https://www.googletagmanager.com; frame-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'
+  Cache-Control: public, max-age=0, must-revalidate
+
+# ── Service worker — never cache ────────────────────────────
 /sw.js
-  Cache-Control: no-cache
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# ── Static assets — long cache ──────────────────────────────
+/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── Images ──────────────────────────────────────────────────
+*.png
+  Cache-Control: public, max-age=86400
+*.ico
+  Cache-Control: public, max-age=86400
+*.svg
+  Cache-Control: public, max-age=86400
+
+# ── Sitemap & robots — short cache so Google picks up changes fast ──
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+  Content-Type: application/xml; charset=utf-8
+/robots.txt
+  Cache-Control: public, max-age=3600
+  Content-Type: text/plain; charset=utf-8
+
+# ── Manifest ────────────────────────────────────────────────
+/manifest.json
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json; charset=utf-8
